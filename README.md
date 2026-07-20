@@ -187,16 +187,13 @@ upgrade/migrate_law_i18n.sql → 03_seed_laws_i18n.sql
 
 If migrate errors with “column already exists”, ignore it and run **`03` only**.
 
-#### C) Upgrade from old `nevera_sudstvo` (HR table names)
+#### C) Switching to ESX (long identifiers)
 
 ```text
-upgrade/upgrade_hr_to_en.sql
-→ 02 (only if doj_laws empty)
-→ 03_seed_laws_i18n.sql
-→ 04_first_supreme_court.sql
+upgrade/esx_identifier_length.sql
 ```
 
-Do **not** run `01` on an old HR database.
+Not needed after a fresh `01` (already `VARCHAR(100)`).
 
 **Verify:**
 
@@ -625,7 +622,7 @@ Nevera_Court/
 │   ├── items/                    # ox + qb-core + legacy ESX item
 │   └── sql/
 │       ├── 01 … 04               # fresh install
-│       └── upgrade/              # HR→EN, i18n migrate, ESX ID length
+│       └── upgrade/              # i18n migrate, ESX ID length
 ├── bridge/
 │   ├── framework/                # qb · qbox · esx · ox · standalone
 │   ├── mdt/                      # ps · tk · ox · advanced
