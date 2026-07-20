@@ -57,7 +57,6 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | **UI** | React NUI + ox_lib menus / alerts / targets |
 | **Languages** | `en` · `hr` · `de` · `fr` — **UI translation only** (`Config.Locale`) |
 
-> **Croatian install guide:** `Install/README_HR.md`  
 > **English install pack:** `Install/README.md`
 
 ---
