@@ -94,9 +94,10 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Jury pool registration · selection · voir dire (`Config.Jury`: 6–12)
 
 ### Fines & economy
-- Editable `config_fines.lua` · rookie fine multiplier
-- Civil damages range · pending fines on login
-- Optional `peleg-billing` integration (pcall-safe)
+- Editable **`config_fines.lua`** — every fine / bail amount is buyer-editable
+- **`Config.Currency = '$'` or `'€'`** (or any symbol) — UI display only
+- Rookie fine multiplier · civil damages range (`Config.Economy`)
+- Pending fines on login · optional `peleg-billing` (pcall-safe)
 
 ### Penal code (NKZ)
 - ~93 articles · 9 categories · LawPicker on criminal forms
@@ -234,7 +235,9 @@ Optional Discord screenshot convars — see [Discord & webhooks](#discord--webho
 
 - [ ] Console shows NKZ categories **9**, laws **~93**
 - [ ] `Config.Locale` set to your language
-- [ ] Courthouse coords match your MLO (`Config.Courthouse`)
+- [ ] `Config.Currency` = `$` or `€` (your server)
+- [ ] Fine / bail amounts reviewed in `config_fines.lua`
+- [ ] **Courthouse / bail / archive / prison coords** set for your MLO (`Config.Courthouse`, `Config.Archive.Locations`, …)
 - [ ] Archive passwords changed (`Config.Archive.Passwords`)
 - [ ] Supreme Court role assigned (`04_…sql` or Admin tab)
 - [ ] Save / Print form → legal warning → `document_a4` in inventory
@@ -251,7 +254,7 @@ Primary editable file: [`config.lua`](config.lua) (escrow-open). Fine table: [`c
 ```lua
 Config.Debug     = false
 Config.Locale    = 'en'       -- 'en' | 'hr' | 'de' | 'fr'
-Config.Currency  = '$'
+Config.Currency  = '$'        -- UI symbol only: '$' or '€' (or any string)
 Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'ox' | 'standalone'
 Config.MDT = {
     provider = 'auto',        -- tk_mdt → ps-mdt → ox_mdt (advanced = manual + resourceName)
@@ -263,6 +266,43 @@ Config.Inventory = { provider = 'auto' }
 Config.Phone     = { provider = 'auto' }
 ```
 
+### Currency (`$` / `€`)
+
+Buyers set the symbol themselves — it is **display only** (panel, notifies, forms chrome):
+
+```lua
+Config.Currency = '$'   -- US / dollar servers
+Config.Currency = '€'   -- EU / euro servers
+```
+
+Changing the symbol does **not** convert amounts. Edit the numbers in `config_fines.lua` / `Config.Economy` to match your server economy.
+
+### Fines & bail amounts (fully editable)
+
+All preset fine / bail values live in **[`config_fines.lua`](config_fines.lua)** (escrow-open). Change any `fine`, `bail`, `hut`, or `label` — no code edits needed.
+
+```lua
+Config.Fines['minor_traffic'] = {
+    label = 'Minor Traffic Violation',
+    fine  = 500,    -- ← change this
+    bail  = 750,    -- ← change this (often ~150% of fine)
+    hut   = false,
+    category = 'traffic',
+}
+```
+
+Civil damages range and related economy knobs:
+
+```lua
+Config.Economy = {
+    civilDamagesMin = 1000,
+    civilDamagesMax = 500000,
+    -- … see config.lua
+}
+```
+
+Ship defaults are calibrated to a reference economy (see comments at the top of `config_fines.lua`). **Adjust for your city** before go-live.
+
 ### MDT sync levels (before you market “4 MDTs”)
 
 | Provider | Level |
@@ -272,9 +312,43 @@ Config.Phone     = { provider = 'auto' }
 | `ps-mdt` | Events + optional patch (`Install/patches/ps-mdt_nevera_warrant.lua`) |
 | `ox_mdt` | Events only (API WIP) |
 
-### Courthouse zones
+### Map locations (courthouse, desks, archives) — **you must set these**
 
-Edit `Config.Courthouse.mainZone` / `terminalZone` / `bailZone` to your map MLO.
+Nevera Court does **not** know your MLO. Every buyer places targets / zones on **their** map:
+
+| Config | What it is | Who uses it |
+|--------|------------|-------------|
+| `Config.Courthouse.mainZone` | Main DOJ / court interaction | Open panel at the courthouse |
+| `Config.Courthouse.terminalZone` | Clerk / filing terminal | Forms / filings desk |
+| `Config.Courthouse.bailZone` | Bail desk | Pay / process bail |
+| `Config.Archive.Locations` | Archive rooms / cabinets | Password stashes for documents |
+| `Config.Prison.intakeZone` (if used) | Prison intake | Commitment / custody handoff |
+
+Ship coords are **placeholders** (or generic downtown). Before go-live:
+
+1. Stand in-game where the desk / courtroom / archive should be  
+2. Copy your `vector3(x, y, z)` (and heading if needed)  
+3. Paste into the matching entry in [`config.lua`](config.lua)  
+4. Restart / `ensure` the resource and test `ox_target` prompts  
+
+There is **no** separate “lawyer office” resource forced by Nevera Court — attorneys use the same DOJ panel + roles. If you want a dedicated law-firm prop/MLO, put a Courthouse or Archive point there yourself.
+
+```lua
+Config.Courthouse = {
+    mainZone = {
+        coords = vector3(0.0, 0.0, 0.0),  -- ← your courtroom / lobby
+        -- …
+    },
+    terminalZone = { coords = vector3(0.0, 0.0, 0.0) }, -- filing desk
+    bailZone     = { coords = vector3(0.0, 0.0, 0.0) }, -- bail window
+}
+
+Config.Archive.Locations = {
+    { label = 'Judge chambers archive', coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
+    { label = 'DA office archive',      coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
+    -- add as many rooms as your MLO needs
+}
+```
 
 ### Prison / commitment
 
