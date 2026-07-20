@@ -50,7 +50,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | | |
 |---|---|
 | **Version** | `1.0.0` (`fxmanifest.lua`) |
-| **Frameworks** | ESX · QBCore · Qbox · OX_Core · Standalone (`Config.Framework = 'auto'`) |
+| **Frameworks** | **ESX** · QBCore · Qbox · OX_Core · Standalone (`Config.Framework = 'auto'`) |
 | **Inventory** | ox · qs · qb · ps · codem · tgiann · origen · ak47 (`auto`) |
 | **Phone** | LB · Quasar · YSeries · 17mov · GKS · NPWD · qb-phone (`auto`) |
 | **MDT** | Bridge for tk_mdt (full) · Advanced (manual) · ps-mdt (patch) · ox_mdt (events) — see `Install/MDT.md` |
@@ -75,7 +75,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Fillable US-style court forms in-game (affidavits, complaints, warrants, motions, orders, subpoenas, civil filings, …)
 - Role-based form access
 - Legal misuse warning before print
-- Print → `document_a4` inventory item (+ optional Discord screenshot via imgbb)
+- Print → `document_a4` inventory item (+ **Discord court transcripts** via imgbb webhook)
 - Judge approve / deny / sign workflow
 - Form chrome i18n: `web/dist/i18n/forms_{en,hr,de,fr}.json`
 
@@ -116,7 +116,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 ### Admin & audit
 - Role assignment (Supreme Court admin panel)
 - Audit log for key DOJ actions
-- Discord: system event webhooks + separate form-screenshot channels
+- Discord: system event logs + **printed form transcripts** (image archive per channel)
 
 ### Framework & MDT bridges (new)
 - **ESX** + QBCore + Qbox + OX_Core + Standalone (`Config.Framework = 'auto'`)
@@ -363,36 +363,57 @@ Form **screenshot** channels use `server.cfg` convars (below), not this table.
 
 Two separate Discord layers:
 
+| Layer | Purpose |
+|-------|---------|
+| **1. System logs** | Case / warrant / bail / fine / verdict / admin / audit text events (`Config.Webhooks`) |
+| **2. Court transcripts** | Every **printed** A4 form is screenshot → uploaded → posted to Discord as a lasting visual record |
+
+### Court transcripts (printed forms → Discord)
+
+When a player **Save / Print**s a court form (and accepts the legal warning), Nevera Court can:
+
+1. Capture the filled A4 page as an image  
+2. Upload it via **imgbb**  
+3. Post an embed into the matching Discord channel  
+
+That channel becomes your **transcript archive** — staff can scroll history and prove what was filed/printed (complaint, warrant, bail bond, verdict, etc.), even if the in-game item is lost.
+
+**Organize like a real docket room:**
+
+- Create **one webhook per channel** (recommended), e.g. `#court-criminal`, `#court-verdicts`, `#court-bail`, …  
+- **Or** one shared `#court-transcripts` channel if you prefer a single feed  
+- Keep channels staff-only / read-only for citizens if you want controlled access  
+
+Without `nevera_court_imgbb_key` **and** the matching `nevera_court_wh_*` URL → print still gives `document_a4` in inventory, but **no Discord transcript**.
+
 > **New to Discord webhooks?** Official guide: [Intro to Webhooks (Discord Support)](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
 
 ### How to create a webhook (quick steps)
 
-1. Open your Discord server → **Server Settings** → **Integrations** → **Webhooks** → **New Webhook** (or **Create Webhook**).
-2. Name it (e.g. `Nevera Court — Cases`), pick the target **text channel**, optionally set an avatar.
-3. Click **Copy Webhook URL** — it looks like `https://discord.com/api/webhooks/ID/TOKEN`.
-4. Paste that URL into `Config.Webhooks` **or** the matching `set nevera_court_wh_…` line in `server.cfg` (see below).
-5. Repeat for each channel you want (cases, warrants, criminal forms, etc.).
+1. Open your Discord server → **Server Settings** → **Integrations** → **Webhooks** → **New Webhook**.
+2. Name it (e.g. `Nevera Court — Criminal transcripts`), pick the target **text channel**.
+3. Click **Copy Webhook URL** — `https://discord.com/api/webhooks/ID/TOKEN`.
+4. Paste into the matching `set nevera_court_wh_…` line in `server.cfg` (or into `Config.Webhooks` for system logs).
+5. Repeat per channel so transcripts stay organized.
 
 **Tips**
 
-- You need **Manage Webhooks** permission on the server.
-- Treat the URL like a password — anyone with it can post to that channel.
-- Create **one webhook per channel** (or one shared channel) so logs stay organized.
-- After editing `server.cfg`, restart the server (or at least `ensure Nevera_Court`).
+- You need **Manage Webhooks** permission.
+- Treat the URL like a password.
+- After editing `server.cfg`, restart the server (or `ensure Nevera_Court`).
 
-**Form screenshots also need an imgbb API key**
+**Imgbb API key (required for transcripts)**
 
-1. Create a free account at [imgbb.com](https://imgbb.com/) → API → copy your key.  
-2. Set `set nevera_court_imgbb_key "YOUR_KEY"` in `server.cfg`.  
-   Without this key, Discord screenshot uploads for printed forms will fail.
+1. Free account at [imgbb.com](https://imgbb.com/) → API → copy key.  
+2. `set nevera_court_imgbb_key "YOUR_KEY"` in `server.cfg`.
 
 ### 1) System event webhooks — `config.lua`
 
-Used for case / warrant / bail / fine / verdict / admin / audit logs (`Config.Webhooks`).
+Used for case / warrant / bail / fine / verdict / admin / audit **text** logs (`Config.Webhooks`). These are activity logs, not full form images.
 
-### 2) Form screenshot channels — `server.cfg` convars
+### 2) Form transcript channels — `server.cfg` convars
 
-Printed forms upload via **imgbb**, then post as Discord embeds. English-only convar names. Reference: [`Install/server_cfg_discord.cfg`](Install/server_cfg_discord.cfg).
+Printed forms → imgbb → Discord embed (visual **transcript**). Reference: [`Install/server_cfg_discord.cfg`](Install/server_cfg_discord.cfg).
 
 ```cfg
 set nevera_court_imgbb_key "YOUR_IMGBB_API_KEY"
@@ -406,16 +427,16 @@ set nevera_court_wh_admin    "https://discord.com/api/webhooks/..."
 set nevera_court_wh_audit    "https://discord.com/api/webhooks/..."
 ```
 
-| Convar | Use |
-|--------|-----|
-| `nevera_court_imgbb_key` | imgbb API key (required for screenshot upload) |
-| `nevera_court_wh_criminal` | Criminal form screenshots |
-| `nevera_court_wh_verdict` | Verdict / judgment screenshots |
-| `nevera_court_wh_fines` | Fine-related screenshots |
-| `nevera_court_wh_bail` | Bail / bond screenshots |
-| `nevera_court_wh_citizen` | Citizen form screenshots |
-| `nevera_court_wh_admin` | Admin form screenshots |
-| `nevera_court_wh_audit` | Audit / general document shots |
+| Convar | Transcript channel for |
+|--------|-------------------------|
+| `nevera_court_imgbb_key` | Imgbb upload (required) |
+| `nevera_court_wh_criminal` | Criminal filings / complaints / warrants |
+| `nevera_court_wh_verdict` | Verdicts / judgments |
+| `nevera_court_wh_fines` | Fine-related prints |
+| `nevera_court_wh_bail` | Bail / bond prints |
+| `nevera_court_wh_citizen` | Citizen / civil prints |
+| `nevera_court_wh_admin` | Admin / Supreme Court prints |
+| `nevera_court_wh_audit` | General / catch-all document shots |
 
 ---
 
@@ -482,10 +503,12 @@ Arrest / Affidavit
 
 ```text
 Save/Print → legal warning → Accept → copy count
-  → Discord screenshot (if imgbb + webhooks set)
+  → Discord court transcript (imgbb + nevera_court_wh_* if configured)
   → document_a4 item(s) in inventory
   → Hand to counsel / judge or place in archive stash
 ```
+
+Discord transcript = lasting channel history of what was printed (staff evidence / docket archive).
 
 ### Archive flow
 
