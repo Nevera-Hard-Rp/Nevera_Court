@@ -57,6 +57,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | **UI** | React NUI + ox_lib menus / alerts / targets |
 | **Languages** | `en` · `hr` · `de` · `fr` — **UI translation only** (`Config.Locale`) |
 
+> **Croatian install guide:** `Install/README_HR.md`  
 > **English install pack:** `Install/README.md`
 
 ---
@@ -138,14 +139,14 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | [oxmysql](https://github.com/overextended/oxmysql) | **Yes** |
 | [ox_lib](https://github.com/overextended/ox_lib) | **Yes** |
 | Framework (**ESX** / QB / Qbox / OX) or `standalone` | **Yes** |
-| Inventory (ox recommended) | **Yes** (print / archive) |
+| Inventory (**ox_inventory** recommended) | **Yes** (print / archive) |
+| **nevera_printeri** | **Yes** — inventory **Use** opens the filled form (Discord/QB style) |
 | MDT (ps-mdt / tk_mdt / ox_mdt / Advanced) | Optional — `Install/MDT.md` |
-| [ox_target](https://github.com/overextended/ox_target) / qb-target | Recommended |
-| Phone script | Optional |
-| Prison script | Optional |
-| peleg-billing | Optional |
+| [ox_target](https://github.com/overextended/ox_target) | Recommended (courthouse zones; F7 works without it) |
+| Phone / prison / peleg-billing | Optional |
 
-> **OneSync** is recommended for production servers.
+> **Not required for Court:** `bl_bridge` (used by `nevera_printeri`), `nevera_menuguard` (optional).  
+> **OneSync** recommended. Full guides: `Install/README.md` · `Install/README_HR.md` · **how to use the panel:** [`Install/USER_GUIDE.md`](Install/USER_GUIDE.md)
 
 ---
 
@@ -163,44 +164,38 @@ Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `Get
 
 ### 2. Database
 
-#### A) Brand-new install (most buyers)
+#### A) QBCore / hosts without MySQL #1067
 
 ```text
-01 → 02 → 03 → 04
+Install/sql/01 → 02 → 03 → 04
 ```
 
-| Order | File | Purpose |
-|-------|------|---------|
-| 1 | `Install/sql/01_nevera_court.sql` | Create all tables (includes `title_hr/de/fr`) |
-| 2 | `Install/sql/02_seed_laws_english.sql` | Seed NKZ (English canonical titles) |
-| 3 | `Install/sql/03_seed_laws_i18n.sql` | Fill HR / DE / FR law titles |
-| 4 | `Install/sql/04_first_supreme_court.sql` | First Supreme Court admin |
+#### B) ESX (all ESX buyers) — or if `01` fails with `#1067`
 
-**Skip `sql/upgrade/`** on a fresh install.
+```text
+Install/ESX_instalacija/01_nevera_court.sql → sql/02 → 03 → 04
+```
 
-#### B) Existing Nevera Court DB (missing `title_hr` / `title_de` / `title_fr`)
+Fixes `#1067 Invalid default value for 'indictment_deadline'` (`DATETIME` nullable dates).
+
+**Skip `sql/upgrade/`** on a fresh install.  
+`upgrade/esx_identifier_length.sql` = old DBs only (later update), not after fresh `01`.
+
+#### C) Existing DB missing `title_hr` / `title_de` / `title_fr`
 
 ```text
 upgrade/migrate_law_i18n.sql → 03_seed_laws_i18n.sql
 ```
-
-If migrate errors with “column already exists”, ignore it and run **`03` only**.
-
-#### C) Switching to ESX (long identifiers)
-
-```text
-upgrade/esx_identifier_length.sql
-```
-
-Not needed after a fresh `01` (already `VARCHAR(100)`).
 
 **Verify:**
 
 ```sql
 SELECT COUNT(*) AS categories FROM doj_law_categories;  -- expect 9
 SELECT COUNT(*) AS laws FROM doj_laws;                  -- expect ~93
+SELECT * FROM doj_roles WHERE role = 'supreme_court';
 ```
 
+**ESX `04`:** use exact `users.identifier` (e.g. `char1:…`), not a short QB citizenid.
 ### 3. Inventory item (`document_a4`)
 
 | Inventory | File |
@@ -209,36 +204,43 @@ SELECT COUNT(*) AS laws FROM doj_laws;                  -- expect ~93
 | **qb-core** + qb/ps inventory | `Install/items/qbcore_document_a4.lua` → `qb-core/shared/items.lua` |
 | **Legacy ESX** (`items` SQL table) | `Install/items/esx_document_a4.sql` |
 
-**ESX + ox_inventory:** use the **ox** file only — do **not** need the ESX SQL.
+**ESX + ox_inventory:** use the **ox** file only.
 
-Copy `Install/items/document_a4.png` → your inventory images folder  
-(ox: `ox_inventory/web/images/` · qb: `qb-inventory/html/images/`).
+Copy `Install/items/document_a4.png` → `ox_inventory/web/images/`.
+
+**Critical (ox_inventory):**
+
+```lua
+consume = 0,                           -- otherwise Use DELETES the item
+export = 'Nevera_Court.viewDocument',  -- MUST match folder name (case-sensitive)
+```
+
+F8 `No such export viewDocument in resource nevera_court` → wrong folder/export casing.  
+**`nevera_printeri` must be started** so Use opens the filled form (like Discord / QB).
 
 ### 4. `server.cfg`
 
 ```cfg
 ensure oxmysql
 ensure ox_lib
-ensure ox_target          # or your target resource
-ensure ox_inventory       # or your inventory
+ensure ox_target
+ensure ox_inventory
 ensure [your-framework]
+ensure nevera_printeri    # required for inventory document Use
 ensure Nevera_Court       # exact folder name
 ```
 
-Optional Discord screenshot convars — see [Discord & webhooks](#discord--webhooks) and `Install/server_cfg_discord.cfg`.
+Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `Install/server_cfg_discord.cfg`.
 
 ### 5. First-boot checklist
 
-- [ ] Console shows NKZ categories **9**, laws **~93**
-- [ ] `Config.Locale` set to your language
-- [ ] `Config.Currency` = `$` or `€` (your server)
-- [ ] Fine / bail amounts reviewed in `config_fines.lua`
-- [ ] **Courthouse / bail / archive / prison coords** set for your MLO (`Config.Courthouse`, `Config.Archive.Locations`, …)
-- [ ] Archive passwords changed (`Config.Archive.Passwords`)
-- [ ] Supreme Court role assigned (`04_…sql` or Admin tab)
-- [ ] Save / Print form → legal warning → `document_a4` in inventory
-- [ ] Webhooks / convars filled (optional but recommended)
-
+- [ ] NKZ: 9 categories, ~93 laws
+- [ ] `Config.Locale` + `Config.Framework = 'auto'` (or `'esx'` / `'qb'`)
+- [ ] Supreme Court in `doj_roles` (ESX: id = `users.identifier`)
+- [ ] `document_a4` with `consume = 0` + correct `export`
+- [ ] `nevera_printeri` started
+- [ ] Print → inventory → **Use** → filled document
+- [ ] Courthouse coords / archive passwords / webhooks (optional)
 ---
 
 ## Configuration
@@ -340,11 +342,16 @@ Config.Courthouse = {
 }
 
 Config.Archive.Locations = {
-    { label = 'Judge chambers archive', coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
-    { label = 'DA office archive',      coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
-    -- add as many rooms as your MLO needs
+    { label = 'City Hall archive 1', coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
+    { label = 'City Hall archive 2', coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
+    { label = 'Police archive',      coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
+    { label = 'Hospital archive',    coords = vector3(0.0, 0.0, 0.0), heading = 0.0 },
+    -- add / remove rows for every physical cabinet on your map
 }
 ```
+
+> **Locations ≠ separate stashes.** Each row is only an `ox_target` access point.  
+> The player always opens **their role stash** (or personal citizen stash) after entering **their role password** — same logic at City Hall, PD, hospital, etc.
 
 ### Prison / commitment
 
@@ -366,12 +373,26 @@ Config.UI = {
 }
 ```
 
-### Archive (passwords & stashes)
+### Archive (how stashes work — important)
+
+Archive is **not** one shared locker for everyone. It is:
+
+1. **Physical points** you place on the map (`Config.Archive.Locations`) — e.g. 2 at City Hall, 1 at police, 1 at hospital.  
+2. **Logical stashes** opened by **DOJ role + password** (independent of which point you used).
+
+| Setting | Meaning |
+|---------|---------|
+| `Locations` | `ox_target` spots only. Add one `{ label, coords, heading }` per cabinet / room. Coords `0,0,0` are skipped. |
+| `Passwords` | One password per role. Player must enter **their** role password. Wrong password → stash does **not** open. |
+| `UseRoleStashes = true` | Staff → shared role stash `doj_archive_<role>` (all judges share judge stash, all police share police stash, …). Citizen → personal `doj_archive_<citizenid>`. |
+| `UseRoleStashes = false` | Staff share one `StashId` (`doj_archive_main`); citizens still get a personal stash. |
+| `AllowedItems = { 'document_a4' }` | **Only** printed court forms can go in. Blocks dumping weapons / junk into the archive. |
+| `StashSize` | Slots + weight for role / main stashes. |
 
 ```lua
 Config.Archive = {
     Passwords = {
-        citizen          = 'citizen123',
+        citizen          = 'citizen123',   -- CHANGE before publish
         police           = 'police123',
         defense_attorney = 'defense123',
         public_defender  = 'defender123',
@@ -380,15 +401,26 @@ Config.Archive = {
         judge            = 'judge123',
         supreme_court    = 'supreme123',
     },
-    UseRoleStashes = true,   -- doj_archive_<role> for staff; personal stash for citizens
-    AllowedItems   = { 'document_a4' },
+    UseRoleStashes = true,
+    AllowedItems   = { 'document_a4' },  -- keep this for stash / evidence protection
     StashSize      = { slots = 50, weight = 100000 },
     StashId        = 'doj_archive_main',
-    Locations      = { --[[ ox_target archive points ]] },
+    Locations = {
+        { label = 'City Hall 1', coords = vector3(...), heading = 0.0 },
+        { label = 'City Hall 2', coords = vector3(...), heading = 0.0 },
+        { label = 'Police',      coords = vector3(...), heading = 0.0 },
+        { label = 'Hospital',    coords = vector3(...), heading = 0.0 },
+    },
 }
 ```
 
-**Change default passwords before going live.** Wrong password = stash will not open.
+**Buyer checklist**
+
+1. **Change all default passwords** before going live.  
+2. Stand in-game at each cabinet → copy `vector3` → paste into `Locations` (as many rows as you need).  
+3. Restart / `ensure Nevera_Court` → test target prompt.  
+4. Each player uses **their role code**; they can use **any** archive point on the map.  
+5. Leave `AllowedItems = { 'document_a4' }` unless you intentionally want other items in the stash.
 
 ### System Discord webhooks
 
@@ -582,10 +614,11 @@ Discord transcript = lasting channel history of what was printed (staff evidence
 
 ### Archive flow
 
-1. Approach an archive location (`Config.Archive.Locations`).  
-2. Enter the **password for your DOJ role**.  
+1. Approach **any** archive point you configured (City Hall, PD, hospital, …).  
+2. Enter the **password for your DOJ role** (`Config.Archive.Passwords`).  
 3. Citizen → personal stash `doj_archive_<citizenid>`.  
-4. Staff (with `UseRoleStashes = true`) → `doj_archive_<role>` (e.g. `doj_archive_judge`, `doj_archive_supreme_court`).
+4. Staff (`UseRoleStashes = true`) → shared role stash `doj_archive_<role>` (e.g. `doj_archive_police`, `doj_archive_judge`).  
+5. Deposit / take items — by default **only `document_a4`** is allowed (`AllowedItems`).
 
 ---
 
@@ -615,13 +648,14 @@ Exact filenames are under `web/public/forms/`. Access is gated by `Enums.FormsBy
 Nevera_Court/
 ├── Install/                      # Buyer pack
 │   ├── README.md / README_HR.md
+│   ├── ESX_instalacija/          # ESX-safe 01 SQL (#1067)
 │   ├── MDT.md
 │   ├── patches/ps-mdt_nevera_warrant.lua
 │   ├── server_cfg_discord.cfg
 │   ├── items/                    # ox + qb-core + legacy ESX item
 │   └── sql/
-│       ├── 01 … 04               # fresh install
-│       └── upgrade/              # i18n migrate, ESX ID length
+│       ├── 01 … 04               # fresh install (QB / generic)
+│       └── upgrade/              # i18n migrate; ESX ID length (old DBs)
 ├── bridge/
 │   ├── framework/                # qb · qbox · esx · ox · standalone
 │   ├── mdt/                      # ps · tk · ox · advanced
@@ -699,16 +733,17 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 
 | Problem | Fix |
 |---------|-----|
-| Resource won’t start | Check `oxmysql` + `ox_lib`; read console for bridge / `Enums` errors |
-| NKZ shows 0 laws | Run `02_seed_laws_english.sql`; confirm table `doj_laws` |
-| Laws still English on HR/DE/FR | Run `03_seed_laws_i18n.sql` (and `upgrade/migrate_law_i18n.sql` if columns missing); set `Config.Locale`; restart |
-| Panel / tabs still English | Upload `locales/` + rebuilt `web/dist/`; `ensure` resource |
-| Save / Print error | Add `document_a4` + PNG; check inventory bridge / `[sv_printer]` |
-| Archive won’t open | Check role + `Config.Archive.Passwords` for that role |
-| Path / resource name issues | Printer uses `GetCurrentResourceName()` — folder name must match `ensure` |
-| No Admin tab | Assign `supreme_court` via SQL `04` or another Supreme Court admin |
-| Discord screenshots fail | Set `nevera_court_imgbb_key` + channel webhooks |
-| migrate i18n “duplicate column” | Columns already exist — run `03_seed_laws_i18n.sql` only |
+| Resource won’t start | Check `oxmysql` + `ox_lib`; read console |
+| MySQL `#1067` / `indictment_deadline` | Use `Install/ESX_instalacija/01` instead of `sql/01` |
+| Panel shows **Citizen** despite SQL | `doj_roles.citizenid` = live framework id (ESX = `users.identifier`); relog |
+| NKZ shows 0 laws | Run `02_seed_laws_english.sql` |
+| Laws still English on HR/DE/FR | Run `03`; set `Config.Locale`; restart |
+| `No such export viewDocument…` | Item `export` must match **folder name** casing |
+| Use deletes item / nothing opens | `consume = 0` + start **`nevera_printeri`** |
+| Save / Print error | Add `document_a4` + PNG; check `[sv_printer]` |
+| Archive won’t open | Role + `Config.Archive.Passwords` |
+| Discord screenshots fail | `nevera_court_imgbb_key` + `nevera_court_wh_*` |
+| migrate i18n “duplicate column” | Run `03` only |
 
 ---
 
