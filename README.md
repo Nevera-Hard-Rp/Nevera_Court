@@ -10,7 +10,7 @@
 [![Lua](https://img.shields.io/badge/Lua-5.4-blue?style=for-the-badge&logo=lua)](https://www.lua.org/)
 [![ox_lib](https://img.shields.io/badge/ox__lib-required-2ECC71?style=for-the-badge)](https://overextended.dev/)
 [![Version](https://img.shields.io/badge/version-1.0.0-informational?style=for-the-badge)](#)
-[![Locale](https://img.shields.io/badge/locale-EN%20%7C%20HR%20%7C%20DE%20%7C%20FR-purple?style=for-the-badge)](#localization)
+[![Locale](https://img.shields.io/badge/locale-EN%20%7C%20HR%20%7C%20DE%20%7C%20FR%20%7C%20ES-purple?style=for-the-badge)](#localization)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](#license--support)
 
 **Cases · Forms · Warrants · Bail · Hearings · Jury · Fines · Penal Code · Archive · MDT · Discord**
@@ -50,12 +50,12 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | | |
 |---|---|
 | **Version** | `1.0.0` (`fxmanifest.lua`) |
-| **Frameworks** | **ESX** · QBCore · Qbox · OX_Core · Standalone (`Config.Framework = 'auto'`) |
+| **Frameworks** | **ESX** · QBCore · Qbox · Standalone (`Config.Framework = 'auto'`) |
 | **Inventory** | ox · qs · qb · ps · codem · tgiann · origen · ak47 (`auto`) |
 | **Phone** | LB · Quasar · YSeries · 17mov · GKS · NPWD · qb-phone (`auto`) |
 | **MDT** | Bridge for tk_mdt (full) · Advanced (manual) · ps-mdt (patch) · ox_mdt (events) — see `Install/MDT.md` |
 | **UI** | React NUI + ox_lib menus / alerts / targets |
-| **Languages** | `en` · `hr` · `de` · `fr` — **UI translation only** (`Config.Locale`) |
+| **Languages** | `en` · `hr` · `de` · `fr` · `es` — **full UI + A4 forms + NKZ titles** (`Config.Locale`) |
 
 > **Croatian install guide:** `Install/README_HR.md`  
 > **English install pack:** `Install/README.md`
@@ -71,13 +71,15 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Parties, charges linked to the penal code, timeline & audit trail
 - Verdicts: Guilty / Not Guilty / Mistrial
 
-### Legal forms (37 A4 HTML templates)
+### Legal forms (37 A4 HTML templates × 5 languages)
 - Fillable US-style court forms in-game (affidavits, complaints, warrants, motions, orders, subpoenas, civil filings, …)
+- **Full HTML per language:** `web/public/forms_{en,hr,de,fr,es}/` → sync to `web/dist/forms_*/` (NUI reads **dist** only)
 - Role-based form access
 - Legal misuse warning before print
 - Print → `document_a4` inventory item (+ **Discord court transcripts** via imgbb webhook)
 - Judge approve / deny / sign workflow
-- Form chrome i18n: `web/dist/i18n/forms_{en,hr,de,fr}.json`
+- Optional chrome i18n: `web/dist/i18n/forms_{en,hr,de,fr,es}.json` (`data-i18n`)
+- Legacy folder `web/public/forms/` is **obsolete** — use `forms_en` instead
 
 ### Warrants
 - Arrest (AW) & search (SW): request → judge approve / deny → police execute
@@ -101,7 +103,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 
 ### Penal code (NKZ)
 - ~93 articles · 9 categories · LawPicker on criminal forms
-- Localized display titles (`title_hr` / `title_de` / `title_fr`)
+- Localized display titles (`title_hr` / `title_de` / `title_fr` / `title_es`) — all seeded in SQL `03` on first install
 - Server exports for MDT / third-party scripts
 
 ### Prison / commitment (hard RP)
@@ -120,14 +122,14 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Discord: system event logs + **printed form transcripts** (image archive per channel)
 
 ### Framework & MDT bridges (new)
-- **ESX** + QBCore + Qbox + OX_Core + Standalone (`Config.Framework = 'auto'`)
+- **ESX** + QBCore + Qbox + Standalone (`Config.Framework = 'auto'`)
 - MDT push: warrants / cases / verdicts / commitments → `Install/MDT.md`
 - Honest sync levels: tk_mdt full · Advanced manual · ps-mdt patch · ox_mdt events
-- `Config.MDT.trustedInvokers` for safe `IssueFine` / programmatic forms
+- `Config.MDT.trustedInvokers` gates every cross-resource write export — `IssueFine`, `CreateFormProgrammatically`, `CreateCommitmentOrder`, `CanExecuteCommitment`, `GetBakedFormHtml` — to your own resource plus this allowlist
 
 ### Localization
-- One switch: `Config.Locale = 'en' | 'hr' | 'de' | 'fr'`
-- Covers ox_lib UI, React panel, print warning, form chrome, and NKZ titles  
+- One switch: `Config.Locale = 'en' | 'hr' | 'de' | 'fr' | 'es'`
+- Covers ox_lib UI, React panel, **full A4 form HTML**, print warning, and NKZ titles  
 - Does **not** rename exports / API (always English)
 
 ---
@@ -138,26 +140,29 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 |----------|----------|
 | [oxmysql](https://github.com/overextended/oxmysql) | **Yes** |
 | [ox_lib](https://github.com/overextended/ox_lib) | **Yes** |
-| Framework (**ESX** / QB / Qbox / OX) or `standalone` | **Yes** |
+| Framework (**ESX** / QB / Qbox) or `standalone` | **Yes** |
 | Inventory (**ox_inventory** recommended) | **Yes** (print / archive) |
-| **nevera_printeri** | **Yes** — inventory **Use** opens the filled form (Discord/QB style) |
+| **nevera_printeri** | **Yes** — inventory **Use** opens the filled form — **shipped in `Install/companion/`** |
+| **bl_bridge** | **Yes** — dependency of `nevera_printeri` — **shipped in `Install/companion/`** |
 | MDT (ps-mdt / tk_mdt / ox_mdt / Advanced) | Optional — `Install/MDT.md` |
 | [ox_target](https://github.com/overextended/ox_target) | Recommended (courthouse zones; F7 works without it) |
 | Phone / prison / peleg-billing | Optional |
 
-> **Not required for Court:** `bl_bridge` (used by `nevera_printeri`), `nevera_menuguard` (optional).  
-> **OneSync** recommended. Full guides: `Install/README.md` · `Install/README_HR.md` · **how to use the panel:** [`Install/USER_GUIDE.md`](Install/USER_GUIDE.md)
+> **Optional:** `nevera_menuguard` (soft lock).  
+> **OneSync** recommended. Full guides: [`Install/README.md`](Install/README.md) · [`Install/README_HR.md`](Install/README_HR.md) · companion: [`Install/companion/README.md`](Install/companion/README.md)
 
 ---
 
 ## Installation
 
-Use the buyer pack under **`Install/`** (SQL, item snippet, Discord convars, guides).
+Use the buyer pack under **`Install/`** (SQL, items, **companion printer**, Discord convars, guides).
 
-### 1. Place the resource
+### 1. Place the resources
 
 ```text
-resources/[nevera]/Nevera_Court/
+resources/[nevera]/Nevera_Court/          ← this resource
+resources/[nevera]/bl_bridge/             ← copy from Install/companion/bl_bridge
+resources/[nevera]/nevera_printeri/       ← copy from Install/companion/nevera_printeri
 ```
 
 Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `GetCurrentResourceName()`.
@@ -178,20 +183,15 @@ Install/ESX_instalacija/01_nevera_court.sql → sql/02 → 03 → 04
 
 Fixes `#1067 Invalid default value for 'indictment_deadline'` (`DATETIME` nullable dates).
 
-**Skip `sql/upgrade/`** on a fresh install.  
-`upgrade/esx_identifier_length.sql` = old DBs only (later update), not after fresh `01`.
-
-#### C) Existing DB missing `title_hr` / `title_de` / `title_fr`
-
-```text
-upgrade/migrate_law_i18n.sql → 03_seed_laws_i18n.sql
-```
+This is a **first-install** pack only. Upgrade/migrate scripts are not shipped in this release (reserved for a later update if needed).
 
 **Verify:**
 
 ```sql
 SELECT COUNT(*) AS categories FROM doj_law_categories;  -- expect 9
 SELECT COUNT(*) AS laws FROM doj_laws;                  -- expect ~93
+SELECT COUNT(*) AS laws_hr FROM doj_laws WHERE title_hr IS NOT NULL;  -- ~93 after 03
+SELECT COUNT(*) AS laws_es FROM doj_laws WHERE title_es IS NOT NULL;  -- ~93 after 03
 SELECT * FROM doj_roles WHERE role = 'supreme_court';
 ```
 
@@ -200,11 +200,13 @@ SELECT * FROM doj_roles WHERE role = 'supreme_court';
 
 | Inventory | File |
 |-----------|------|
-| **ox_inventory** (QB / Qbox / ESX) | `Install/items/ox_inventory_document_a4.lua` → `ox_inventory/data/items.lua` |
+| **ox_inventory** (QB / **Qbox** / ESX) | `Install/items/ox_inventory_document_a4.lua` → `ox_inventory/data/items.lua` |
+| **Qbox (`qbx_core`)** | same ox block — `qbx_core` has **no** `shared/items.lua` — see `Install/items/qbx_core_document_a4.lua` |
 | **qb-core** + qb/ps inventory | `Install/items/qbcore_document_a4.lua` → `qb-core/shared/items.lua` |
 | **Legacy ESX** (`items` SQL table) | `Install/items/esx_document_a4.sql` |
 
-**ESX + ox_inventory:** use the **ox** file only.
+**ESX + ox_inventory:** use the **ox** file only.  
+**Do not** paste a second `document_a4` from `nevera_printeri/install/ox_items.lua` (overwrites Court).
 
 Copy `Install/items/document_a4.png` → `ox_inventory/web/images/`.
 
@@ -212,11 +214,12 @@ Copy `Install/items/document_a4.png` → `ox_inventory/web/images/`.
 
 ```lua
 consume = 0,                           -- otherwise Use DELETES the item
+stack = false,
 export = 'Nevera_Court.viewDocument',  -- MUST match folder name (case-sensitive)
 ```
 
 F8 `No such export viewDocument in resource nevera_court` → wrong folder/export casing.  
-**`nevera_printeri` must be started** so Use opens the filled form (like Discord / QB).
+Notify *nevera_printeri must be started* → copy + `ensure` companion printer (see below).
 
 ### 4. `server.cfg`
 
@@ -225,20 +228,34 @@ ensure oxmysql
 ensure ox_lib
 ensure ox_target
 ensure ox_inventory
-ensure [your-framework]
-ensure nevera_printeri    # required for inventory document Use
+ensure [your-framework]   # es_extended / qb-core / qbx_core
+
+# bl_bridge (required by nevera_printeri) — Qbox example:
+setr bl:framework   "qbx"   # qb | esx | qbx
+setr bl:inventory   "ox"
+setr bl:target      "ox"
+setr bl:context     "ox"
+setr bl:progressbar "ox"
+setr bl:radial      "ox"
+setr bl:notify      "ox"
+setr bl:textui      "ox"
+
+ensure bl_bridge          # from Install/companion/
+ensure nevera_printeri    # from Install/companion/ — before Court
 ensure Nevera_Court       # exact folder name
 ```
+
+Also run `nevera_printeri/sql/nevera_printeri.sql` once. Details: `Install/companion/README.md`.
 
 Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `Install/server_cfg_discord.cfg`.
 
 ### 5. First-boot checklist
 
 - [ ] NKZ: 9 categories, ~93 laws
-- [ ] `Config.Locale` + `Config.Framework = 'auto'` (or `'esx'` / `'qb'`)
+- [ ] `Config.Locale` + `Config.Framework = 'auto'` (or `'esx'` / `'qb'` / `'qbox'`)
 - [ ] Supreme Court in `doj_roles` (ESX: id = `users.identifier`)
 - [ ] `document_a4` with `consume = 0` + correct `export`
-- [ ] `nevera_printeri` started
+- [ ] `bl_bridge` + `nevera_printeri` copied from `Install/companion/` and started
 - [ ] Print → inventory → **Use** → filled document
 - [ ] Courthouse coords / archive passwords / webhooks (optional)
 ---
@@ -251,12 +268,12 @@ Primary editable file: [`config.lua`](config.lua) (escrow-open). Fine table: [`c
 
 ```lua
 Config.Debug     = false
-Config.Locale    = 'en'       -- 'en' | 'hr' | 'de' | 'fr'
+Config.Locale    = 'en'       -- 'en' | 'hr' | 'de' | 'fr' | 'es'
 Config.Currency  = '$'        -- UI symbol only: '$' or '€' (or any string)
-Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'ox' | 'standalone'
+Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'standalone'
 Config.MDT = {
     provider = 'auto',        -- tk_mdt → ps-mdt → ox_mdt (advanced = manual + resourceName)
-    trustedInvokers = { 'ps-mdt', 'tk_mdt' },
+    trustedInvokers = { 'ps-mdt', 'tk_mdt' },  -- also gates IssueFine / CreateCommitmentOrder / etc. — see Exports & integration
 }
 -- MDT sync levels + ps-mdt patch: Install/MDT.md
 Config.ESX = { RequireDuty = false, AdminGroups = { 'admin', 'superadmin' } }
@@ -437,27 +454,31 @@ Form **screenshot** channels use `server.cfg` convars (below), not this table.
 
 ## Localization
 
-| Code | Language | Locale file | Form strings |
-|------|----------|-------------|--------------|
-| `en` | English (default) | `locales/en.lua` | `forms_en.json` |
-| `hr` | Croatian / Balkan | `locales/hr.lua` | `forms_hr.json` |
-| `de` | German | `locales/de.lua` | `forms_de.json` |
-| `fr` | French | `locales/fr.lua` | `forms_fr.json` |
+| Code | Language | UI (`locales/`) | Full A4 HTML | Form chrome JSON | NKZ titles |
+|------|----------|-----------------|--------------|------------------|------------|
+| `en` | English (default) | `en.lua` | `forms_en/` | `forms_en.json` | `title` (base) |
+| `hr` | Croatian | `hr.lua` | `forms_hr/` | `forms_hr.json` | `title_hr` (`03`) |
+| `de` | German | `de.lua` | `forms_de/` | `forms_de.json` | `title_de` (`03`) |
+| `fr` | French | `fr.lua` | `forms_fr/` | `forms_fr.json` | `title_fr` (`03`) |
+| `es` | Spanish | `es.lua` | `forms_es/` | `forms_es.json` | `title_es` (`03`) |
 
 ### What `Config.Locale` controls
 
-`Config.Locale` (including `hr`) is **UI translation only** — panel labels, notifies, form chrome, NKZ display titles. Public API / export names stay **English**.
+One switch drives **panel + ox_lib + full form HTML folder + NKZ display titles**. Public API / export names stay **English**.
 
 | Area | Localized |
 |------|-----------|
 | ox_lib notifies, alerts, menus, targets | Yes |
 | React panel (`OPEN_PANEL` strings) | Yes |
 | Print legal warning | Yes |
-| HTML form chrome (`data-i18n` + `forms_*.json`) | Yes |
-| NKZ titles in DB (`title_*`) | Yes (after SQL `03`) |
+| **Full HTML court forms** (`forms_<locale>/`) | Yes (37 templates each) |
+| HTML `data-i18n` chrome (`forms_*.json`) | Yes |
+| NKZ titles in DB (`title_*`) | Yes (SQL `03` — HR/DE/FR/ES) |
 | Export / event names | No (always English) |
 
-**Add a language:** copy `locales/en.lua` → `locales/xx.lua`, register it in `fxmanifest.lua` `shared_scripts`, add `forms_xx.json`, set `Config.Locale = 'xx'`.
+**Important:** FiveM NUI loads **`web/dist/`** only. After editing `web/public/forms_*`, sync **all** language folders into `web/dist/forms_*/` (or `npm run build`) and restart. Missing `forms_hr` (etc.) in `dist` falls back to `forms_en` and can look mixed EN/locale.
+
+**Add a language:** copy `locales/en.lua` → `locales/xx.lua`, register in `fxmanifest.lua`, add `forms_xx/` (37 HTML) + `forms_xx.json`, extend `FORM_LOCALES` / `forms_i18n.js` / `sv_printer.lua`, add SQL `title_xx` columns + seed, set `Config.Locale = 'xx'`.
 
 ---
 
@@ -624,21 +645,21 @@ Discord transcript = lasting channel history of what was printed (staff evidence
 
 ## Legal forms
 
-Templates live in `web/dist/forms/` (source: `web/public/forms/`). Form labels / chrome use `web/dist/i18n/forms_*.json`.
+Templates live in **per-language folders** (full HTML each — **37 files** + `form-loader.js`):
 
-### Included templates (37)
+| `Config.Locale` | Folder (edit `public`, ship `dist`) |
+|-----------------|-------------------------------------|
+| `en` | `web/dist/forms_en/` ← `web/public/forms_en/` |
+| `hr` | `web/dist/forms_hr/` |
+| `de` | `web/dist/forms_de/` |
+| `fr` | `web/dist/forms_fr/` |
+| `es` | `web/dist/forms_es/` |
 
-| Category | Examples |
-|----------|----------|
-| Criminal intake | Affidavit, Criminal Complaint, Criminal Pre-Filing |
-| Warrants | Request Arrest Warrant, Arrest Warrant, Request Search & Seizure, Search Warrant |
-| Bail / bond | Bail Agreement, Bond Order |
-| Motions | Motion to Dismiss, Contempt, Pre-Trial Conference, Reconsider, Enlargement of Time, Response to Motion |
-| Orders / notices | Notice of Hearing, Supreme Court Order, various court orders |
-| Process | Subpoena (testify / duces tecum), Proof of Service, Appearance of Counsel, Substitution of Attorney |
-| Civil / citizen | Civil Complaint, Civil Judgment, Answer to Complaint, Name Change Request |
+Missing file in a locale folder **falls back to `forms_en`**.  
+Optional JSON chrome: `web/dist/i18n/forms_*.json` (HTML `data-i18n`).  
+Do **not** use the old `web/public/forms/` folder (legacy).
 
-Exact filenames are under `web/public/forms/`. Access is gated by `Enums.FormsByRole` (role → allowed form types).
+Access is gated by `Enums.FormsByRole`. Keep `name=` / `id=` on inputs identical across languages (autofill).
 
 ---
 
@@ -654,10 +675,13 @@ Nevera_Court/
 │   ├── server_cfg_discord.cfg
 │   ├── items/                    # ox + qb-core + legacy ESX item
 │   └── sql/
-│       ├── 01 … 04               # fresh install (QB / generic)
-│       └── upgrade/              # i18n migrate; ESX ID length (old DBs)
+│       ├── 01_nevera_court.sql       # schema (all frameworks; includes title_hr/de/fr/es)
+│       ├── 02_seed_laws_english.sql  # English NKZ base
+│       ├── 03_seed_laws_i18n.sql     # HR + DE + FR + ES titles
+│       └── 04_first_supreme_court.sql
+│       # (no upgrade/ in this release — first install only)
 ├── bridge/
-│   ├── framework/                # qb · qbox · esx · ox · standalone
+│   ├── framework/                # qb · qbox · esx · standalone
 │   ├── mdt/                      # ps · tk · ox · advanced
 │   ├── inventory/ · phone/
 │   └── registry.lua · resolve.lua
@@ -715,9 +739,11 @@ Primary export names are **English**. Croatian names are legacy aliases. `Config
 | `CreateCommitmentOrder` / `CanExecuteCommitment` | Prison |
 | `GetJury` / `CountAvailableJurors` | Jury |
 | `GetHearingsForCase` / `GetNextHearing` | Hearings |
-| `GetFormById` / `GetFormsForCase` / `CreateFormProgrammatically` | Forms |
+| `GetFormById` / `GetFormsForCase` / `CreateFormProgrammatically` / `GetBakedFormHtml` | Forms |
 
 **Legacy HR aliases** (same functions): `GetZakoni` → `GetLaws`, `GetZakon` → `GetLaw`, `GetKategorije` → `GetCategories`, `GetFormaById` → `GetFormById`. Prefer English in new code.
+
+**Restricted exports:** `IssueFine`, `CreateFormProgrammatically`, `CreateCommitmentOrder`, `CanExecuteCommitment`, and `GetBakedFormHtml` only answer calls from this resource itself or from a resource name listed in `Config.MDT.trustedInvokers` — everything else gets `nil`/`false` and a `BLOCKED …` line in console. Add your MDT/other integration's resource name to that list if a call is being rejected.
 
 ```lua
 local laws = exports['Nevera_Court']:GetLaws()
@@ -737,13 +763,14 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | MySQL `#1067` / `indictment_deadline` | Use `Install/ESX_instalacija/01` instead of `sql/01` |
 | Panel shows **Citizen** despite SQL | `doj_roles.citizenid` = live framework id (ESX = `users.identifier`); relog |
 | NKZ shows 0 laws | Run `02_seed_laws_english.sql` |
-| Laws still English on HR/DE/FR | Run `03`; set `Config.Locale`; restart |
+| Laws still English on HR/DE/FR/ES | Run `03_seed_laws_i18n.sql`; set `Config.Locale`; restart |
+| Form half English / half locale | Sync all `public/forms_*` → `dist/forms_*`; restart |
 | `No such export viewDocument…` | Item `export` must match **folder name** casing |
 | Use deletes item / nothing opens | `consume = 0` + start **`nevera_printeri`** |
 | Save / Print error | Add `document_a4` + PNG; check `[sv_printer]` |
 | Archive won’t open | Role + `Config.Archive.Passwords` |
 | Discord screenshots fail | `nevera_court_imgbb_key` + `nevera_court_wh_*` |
-| migrate i18n “duplicate column” | Run `03` only |
+| migrate i18n “duplicate column” | N/A in this release (first-install SQL only) |
 
 ---
 
