@@ -74,9 +74,9 @@ CREATE TABLE IF NOT EXISTS `doj_cases` (
   -- Dates
   `incident_date`             DATE         DEFAULT NULL,
   `filed_at`                  TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-  `indictment_deadline`       TIMESTAMP    DEFAULT NULL,
+  `indictment_deadline`       DATETIME    NULL DEFAULT NULL,
   `updated_at`                TIMESTAMP    DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `closed_at`                 TIMESTAMP    DEFAULT NULL,
+  `closed_at`                 DATETIME    NULL DEFAULT NULL,
 
   -- ── Single-column (fast lookup on one field) ──────────
   INDEX `idx_status`      (`status`),
@@ -157,9 +157,9 @@ CREATE TABLE IF NOT EXISTS `doj_warrants` (
   `judge_citizenid`       VARCHAR(100)  DEFAULT NULL,
   `judge_name`            VARCHAR(100) DEFAULT NULL,
   `denial_reason`         TEXT         DEFAULT NULL,
-  `issued_at`             TIMESTAMP    DEFAULT NULL,
-  `expires_at`            TIMESTAMP    DEFAULT NULL,
-  `executed_at`           TIMESTAMP    DEFAULT NULL,
+  `issued_at`             DATETIME    NULL DEFAULT NULL,
+  `expires_at`            DATETIME    NULL DEFAULT NULL,
+  `executed_at`           DATETIME    NULL DEFAULT NULL,
   `requested_at`          TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
   `requested_by`          VARCHAR(100)  NOT NULL,
 
@@ -207,9 +207,9 @@ CREATE TABLE IF NOT EXISTS `doj_bail` (
   `forfeiture_reason`     TEXT         DEFAULT NULL,
   `strike_count`          TINYINT      DEFAULT 0,
   `missed_hearing`        TINYINT(1)   DEFAULT 0,
-  `bail_ban_until`        TIMESTAMP    DEFAULT NULL,
-  `set_at`                TIMESTAMP    DEFAULT NULL,
-  `paid_at`               TIMESTAMP    DEFAULT NULL,
+  `bail_ban_until`        DATETIME    NULL DEFAULT NULL,
+  `set_at`                DATETIME    NULL DEFAULT NULL,
+  `paid_at`               DATETIME    NULL DEFAULT NULL,
   `created_at`            TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
 
   -- Composite
@@ -446,10 +446,12 @@ CREATE TABLE IF NOT EXISTS `doj_law_categories` (
   `title_hr`    VARCHAR(100) DEFAULT NULL,
   `title_de`    VARCHAR(100) DEFAULT NULL,
   `title_fr`    VARCHAR(100) DEFAULT NULL,
+  `title_es`    VARCHAR(100) DEFAULT NULL,
   `description` TEXT         DEFAULT NULL,
   `description_hr` TEXT      DEFAULT NULL,
   `description_de` TEXT      DEFAULT NULL,
   `description_fr` TEXT      DEFAULT NULL,
+  `description_es` TEXT      DEFAULT NULL,
   `color`       VARCHAR(20)  DEFAULT NULL,
   `icon`        VARCHAR(50)  DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -466,10 +468,12 @@ CREATE TABLE IF NOT EXISTS `doj_laws` (
   `title_hr`    VARCHAR(200) DEFAULT NULL,
   `title_de`    VARCHAR(200) DEFAULT NULL,
   `title_fr`    VARCHAR(200) DEFAULT NULL,
+  `title_es`    VARCHAR(200) DEFAULT NULL,
   `description` TEXT         DEFAULT NULL,
   `description_hr` TEXT      DEFAULT NULL,
   `description_de` TEXT      DEFAULT NULL,
   `description_fr` TEXT      DEFAULT NULL,
+  `description_es` TEXT      DEFAULT NULL,
   `category_id` INT          DEFAULT NULL,
   `severity`    VARCHAR(30)  DEFAULT NULL,
   `min_fine`    INT          DEFAULT 0,
@@ -522,7 +526,7 @@ CREATE TABLE IF NOT EXISTS `doj_commitment_orders` (
   `executed_by_name`      VARCHAR(100) DEFAULT NULL,
   `notes`                 TEXT         DEFAULT NULL,
   `issued_at`             TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
-  `executed_at`           TIMESTAMP    DEFAULT NULL,
+  `executed_at`           DATETIME    NULL DEFAULT NULL,
   INDEX `idx_status`            (`status`),
   INDEX `idx_defendant_status`  (`defendant_citizenid`, `status`),
   INDEX `idx_case`              (`case_number`)

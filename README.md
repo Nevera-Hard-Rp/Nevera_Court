@@ -57,8 +57,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | **UI** | React NUI + ox_lib menus / alerts / targets |
 | **Languages** | `en` · `hr` · `de` · `fr` · `es` — **full UI + A4 forms + NKZ titles** (`Config.Locale`) |
 
-> **Croatian install guide:** `Install/README_HR.md`  
-> **English install pack:** `Install/README.md`
+> **Install pack:** `Install/README.md`
 
 ---
 
@@ -149,7 +148,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | Phone / prison / peleg-billing | Optional |
 
 > **Optional:** `nevera_menuguard` (soft lock).  
-> **OneSync** recommended. Full guides: [`Install/README.md`](Install/README.md) · [`Install/README_HR.md`](Install/README_HR.md) · companion: [`Install/companion/README.md`](Install/companion/README.md)
+> **OneSync** recommended. Full guide: [`Install/README.md`](Install/README.md) · companion: [`Install/companion/README.md`](Install/companion/README.md)
 
 ---
 
@@ -169,19 +168,11 @@ Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `Get
 
 ### 2. Database
 
-#### A) QBCore / hosts without MySQL #1067
+Same schema for every framework — run in order:
 
 ```text
 Install/sql/01 → 02 → 03 → 04
 ```
-
-#### B) ESX (all ESX buyers) — or if `01` fails with `#1067`
-
-```text
-Install/ESX_instalacija/01_nevera_court.sql → sql/02 → 03 → 04
-```
-
-Fixes `#1067 Invalid default value for 'indictment_deadline'` (`DATETIME` nullable dates).
 
 This is a **first-install** pack only. Upgrade/migrate scripts are not shipped in this release (reserved for a later update if needed).
 
@@ -668,8 +659,7 @@ Access is gated by `Enums.FormsByRole`. Keep `name=` / `id=` on inputs identical
 ```text
 Nevera_Court/
 ├── Install/                      # Buyer pack
-│   ├── README.md / README_HR.md
-│   ├── ESX_instalacija/          # ESX-safe 01 SQL (#1067)
+│   ├── README.md
 │   ├── MDT.md
 │   ├── patches/ps-mdt_nevera_warrant.lua
 │   ├── server_cfg_discord.cfg
@@ -760,7 +750,6 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | Problem | Fix |
 |---------|-----|
 | Resource won’t start | Check `oxmysql` + `ox_lib`; read console |
-| MySQL `#1067` / `indictment_deadline` | Use `Install/ESX_instalacija/01` instead of `sql/01` |
 | Panel shows **Citizen** despite SQL | `doj_roles.citizenid` = live framework id (ESX = `users.identifier`); relog |
 | NKZ shows 0 laws | Run `02_seed_laws_english.sql` |
 | Laws still English on HR/DE/FR/ES | Run `03_seed_laws_i18n.sql`; set `Config.Locale`; restart |
