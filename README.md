@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://nevera-rp.com/tebex/assets/nevera-court-github-banner.png" alt="Nevera Court — FiveM DOJ / Court System" width="100%">
+<img src="https://i.imgur.com/N6C6XbT.png" alt="Nevera Court — FiveM DOJ / Court System" width="100%">
 
 # Nevera Court
 
@@ -9,7 +9,7 @@
 [![FiveM](https://img.shields.io/badge/FiveM-cerulean-orange?style=for-the-badge)](https://fivem.net/)
 [![Lua](https://img.shields.io/badge/Lua-5.4-blue?style=for-the-badge&logo=lua)](https://www.lua.org/)
 [![ox_lib](https://img.shields.io/badge/ox__lib-required-2ECC71?style=for-the-badge)](https://overextended.dev/)
-[![Version](https://img.shields.io/badge/version-1.0.0-informational?style=for-the-badge)](#)
+[![Version](https://img.shields.io/badge/version-1.0.0-informational?style=for-the-badge)](#changelog)
 [![Locale](https://img.shields.io/badge/locale-EN%20%7C%20HR%20%7C%20DE%20%7C%20FR%20%7C%20ES-purple?style=for-the-badge)](#localization)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](#license--support)
 
@@ -28,9 +28,31 @@
 [Development](#development--rebuild-nui) ·
 [Exports](#exports--integration) ·
 [Troubleshooting](#troubleshooting) ·
-[Support](#support--community)
+[Support](#support--community) ·
+[Changelog](#changelog)
 
 </div>
+
+---
+
+## Changelog
+
+### 1.0.0 — Initial public release
+
+First public Cfx.re / Tebex release:
+
+- Full DOJ panel (cases, 37 A4 forms × 5 languages, warrants, bail, hearings, jury, fines, NKZ, archive)
+- Framework bridges (ESX / QB / Qbox / OX / standalone) + multi-inventory / phone / MDT / prison
+- Built-in document viewer on Use (`nevera_printeri` optional)
+- `ox_target` or `qb-target`; courtroom projector (host whitelist) + gavel
+- Hard-RP commitment orders; official seal; Discord webhooks
+- Default currency `€`
+- **Judicial Police** module: standing 24/7 court-security duty + prisoner transport requests from court → police, with an optional judge-initiated court-protection request for high-risk trials
+- Command-chain alarm (deputy chief / chief / duty officer only, `Config.JudicialPolice.commandJobs` + `commandMinGrade`) that repeats until acknowledged, then lets command assign one or more officers; court gets a confirmation of who claimed it
+- Duty toggle (`/jpdezurni` or the courthouse-entrance target) + online-officer assignment picker in the **Judicial Police** NUI tab, in all 5 languages
+- Mandatory Discord court transcripts (`Config.Forms.requireTranscript = true`) — printing a form without its Discord transcript image is rejected before any fee is charged; use `Config.Forms.transcriptExempt` to exclude specific form types
+
+Docs: [asociety.net Court docs](https://asociety.net/docs/#/docs/sudstvo/overview) · Support: [discord.gg/brGTHQRYys](https://discord.gg/brGTHQRYys)
 
 ---
 
@@ -44,13 +66,14 @@
 - Set bail, schedule hearings, run jury selection  
 - Enter verdicts and issue **commitment orders** (hard RP prison handoff)  
 - Calculate fines, browse the penal code (NKZ), and log actions to Discord  
+- Dispatch Judicial Police for prisoner transport or optional court protection, with a command-chain alarm that repeats until claimed  
 
 Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, bridges, SQL, and the full React NUI source while core gameplay logic can be encrypted.
 
 | | |
 |---|---|
 | **Version** | `1.0.0` (`fxmanifest.lua`) |
-| **Frameworks** | **ESX** · QBCore · Qbox · Standalone (`Config.Framework = 'auto'`) |
+| **Frameworks** | **ESX** · QBCore · Qbox · OX_Core · Standalone (`Config.Framework = 'auto'`) |
 | **Inventory** | ox · qs · qb · ps · codem · tgiann · origen · ak47 (`auto`) |
 | **Phone** | LB · Quasar · YSeries · 17mov · GKS · NPWD · qb-phone (`auto`) |
 | **MDT** | Bridge for tk_mdt (full) · Advanced (manual) · ps-mdt (patch) · ox_mdt (events) — see `Install/MDT.md` |
@@ -110,6 +133,14 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Custody / DOC executes the commitment order near the inmate → prison provider handoff
 - Bridges: `qb-prison` · `rcore_prison` · `pickle_prisons` · `custom` · `none`
 
+### Judicial Police (court security + prisoner transport)
+- Standing 24/7 duty toggle (`/jpdezurni` or the courthouse-entrance target) — court security is a continuous assignment, not requested per-trial
+- Court → Judicial Police requests: **prisoner transport** to a hearing (routine) and an **optional** judge-initiated **court protection** request for high-risk trials only
+- Command-chain alarm: only deputy chief / chief / duty officer (`Config.JudicialPolice.commandJobs` + `commandMinGrade`) get paged first, repeating sound + phone + Discord alert until one of them acknowledges — never blasted to every online officer
+- Command then assigns one or more online officers; court gets a confirmation of who claimed/was assigned; "Completed" is always a single click, with an optional note softly recommended only for prisoner transport
+- Separate from the existing arrest/search-warrant `dovedbeni nalog` flow (regular police) — that system is unchanged
+- New NUI tab + Discord channel (`nevera_court_log_judicial`) · fully localized (5 languages)
+
 ### Document archive
 - Password-protected stashes per role (`Config.Archive.Passwords`)
 - Optional per-role stashes (`UseRoleStashes = true`): citizen personal stash → police / DA / defense / judge / Supreme Court stacks
@@ -121,7 +152,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Discord: system event logs + **printed form transcripts** (image archive per channel)
 
 ### Framework & MDT bridges (new)
-- **ESX** + QBCore + Qbox + Standalone (`Config.Framework = 'auto'`)
+- **ESX** + QBCore + Qbox + OX_Core + Standalone (`Config.Framework = 'auto'`)
 - MDT push: warrants / cases / verdicts / commitments → `Install/MDT.md`
 - Honest sync levels: tk_mdt full · Advanced manual · ps-mdt patch · ox_mdt events
 - `Config.MDT.trustedInvokers` gates every cross-resource write export — `IssueFine`, `CreateFormProgrammatically`, `CreateCommitmentOrder`, `CanExecuteCommitment`, `GetBakedFormHtml` — to your own resource plus this allowlist
@@ -140,41 +171,41 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | [oxmysql](https://github.com/overextended/oxmysql) | **Yes** |
 | [ox_lib](https://github.com/overextended/ox_lib) | **Yes** |
 | Framework (**ESX** / QB / Qbox) or `standalone` | **Yes** |
-| Inventory (**ox_inventory** recommended) | **Yes** (print / archive) |
-| **nevera_printeri** | **Yes** — inventory **Use** opens the filled form — **shipped in `Install/companion/`** |
-| **bl_bridge** | **Yes** — dependency of `nevera_printeri` — **shipped in `Install/companion/`** |
+| [ox_inventory](https://github.com/overextended/ox_inventory) **or** [qb-inventory](https://github.com/qbcore-framework/qb-inventory) | **Yes** for print / archive `document_a4` (`Config.Inventory.provider = 'auto'`; force `'qb-inventory'` on mixed servers) |
+| [ox_target](https://github.com/overextended/ox_target) **or** [qb-target](https://github.com/qbcore-framework/qb-target) | Recommended (courthouse / archive / projector eye). F5 panel works without either. `Config.Target.provider = 'auto'` |
+| [nevera_printeri](https://asociety.net/docs/#/docs/printeri/overview) | **Optional, sold separately** — physical printers. Court already views filled forms on Use. |
 | MDT (ps-mdt / tk_mdt / ox_mdt / Advanced) | Optional — `Install/MDT.md` |
-| [ox_target](https://github.com/overextended/ox_target) | Recommended (courthouse zones; F7 works without it) |
-| Phone / prison / peleg-billing | Optional |
+| Phone / prison | Optional |
+| Dispatch (ps-dispatch / cd_dispatch / qs-dispatch) | Optional — escalates the Judicial Police command alarm (`Config.JudicialPolice.notify.dispatch`) |
+| [peleg-billing](https://github.com/Pelegrino/peleg-billing) | Optional — invoices use `Config.Billing.issuerJob`; filing prices are `Config.Fees` |
 
 > **Optional:** `nevera_menuguard` (soft lock).  
-> **OneSync** recommended. Full guide: [`Install/README.md`](Install/README.md) · companion: [`Install/companion/README.md`](Install/companion/README.md)
+> **OneSync** recommended. Full guide: [`Install/README.md`](Install/README.md)
 
 ---
 
 ## Installation
 
-Use the buyer pack under **`Install/`** (SQL, items, **companion printer**, Discord convars, guides).
+Use the buyer pack under **`Install/`** (SQL, items, Discord convars, guides).
 
 ### 1. Place the resources
 
 ```text
 resources/[nevera]/Nevera_Court/          ← this resource
-resources/[nevera]/bl_bridge/             ← copy from Install/companion/bl_bridge
-resources/[nevera]/nevera_printeri/       ← copy from Install/companion/nevera_printeri
+resources/[nevera]/nevera_printeri/       ← optional, sold separately
 ```
 
 Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `GetCurrentResourceName()`.
 
 ### 2. Database
 
-Same schema for every framework — run in order:
+Same schema for every framework — **fresh install**, run in order:
 
 ```text
-Install/sql/01 → 02 → 03 → 04
+Install/sql/01 → 02 → 03 → 04 → 07
 ```
 
-This is a **first-install** pack only. Upgrade/migrate scripts are not shipped in this release (reserved for a later update if needed).
+Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police requests table) is safe on both fresh and existing databases. See `Install/README.md`.
 
 **Verify:**
 
@@ -197,9 +228,9 @@ SELECT * FROM doj_roles WHERE role = 'supreme_court';
 | **Legacy ESX** (`items` SQL table) | `Install/items/esx_document_a4.sql` |
 
 **ESX + ox_inventory:** use the **ox** file only.  
-**Do not** paste a second `document_a4` from `nevera_printeri/install/ox_items.lua` (overwrites Court).
+**Do not** paste a second `document_a4` from a printer item file (overwrites Court).
 
-Copy `Install/items/document_a4.png` → `ox_inventory/web/images/`.
+Copy `Install/items/document_a4.png` → `ox_inventory/web/images/` **or** `qb-inventory/html/images/`.
 
 **Critical (ox_inventory):**
 
@@ -210,33 +241,22 @@ export = 'Nevera_Court.viewDocument',  -- MUST match folder name (case-sensitive
 ```
 
 F8 `No such export viewDocument in resource nevera_court` → wrong folder/export casing.  
-Notify *nevera_printeri must be started* → copy + `ensure` companion printer (see below).
+Filled forms open in **Court NUI**. If you also own `nevera_printeri`, `ensure` it before Court to use the printer UI.
 
 ### 4. `server.cfg`
 
 ```cfg
 ensure oxmysql
 ensure ox_lib
-ensure ox_target
+ensure ox_target          # or qb-target — Config.Target.provider = 'auto'
 ensure ox_inventory
 ensure [your-framework]   # es_extended / qb-core / qbx_core
 
-# bl_bridge (required by nevera_printeri) — Qbox example:
-setr bl:framework   "qbx"   # qb | esx | qbx
-setr bl:inventory   "ox"
-setr bl:target      "ox"
-setr bl:context     "ox"
-setr bl:progressbar "ox"
-setr bl:radial      "ox"
-setr bl:notify      "ox"
-setr bl:textui      "ox"
-
-ensure bl_bridge          # from Install/companion/
-ensure nevera_printeri    # from Install/companion/ — before Court
+ensure nevera_printeri    # optional — only if purchased separately
 ensure Nevera_Court       # exact folder name
 ```
 
-Also run `nevera_printeri/sql/nevera_printeri.sql` once. Details: `Install/companion/README.md`.
+If you own `nevera_printeri`, also run its own SQL once — see its install guide.
 
 Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `Install/server_cfg_discord.cfg`.
 
@@ -246,9 +266,10 @@ Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `I
 - [ ] `Config.Locale` + `Config.Framework = 'auto'` (or `'esx'` / `'qb'` / `'qbox'`)
 - [ ] Supreme Court in `doj_roles` (ESX: id = `users.identifier`)
 - [ ] `document_a4` with `consume = 0` + correct `export`
-- [ ] `bl_bridge` + `nevera_printeri` copied from `Install/companion/` and started
-- [ ] Print → inventory → **Use** → filled document
+- [ ] `nevera_printeri` only if you bought it (optional)
+- [ ] Print → inventory → **Use** → filled document (Court viewer)
 - [ ] Courthouse coords / archive passwords / webhooks (optional)
+- [ ] Judicial Police: `commandJobs` / `commandMinGrade` / `assignableJobs` / `dutyZone.coords` match your server
 ---
 
 ## Configuration
@@ -261,7 +282,8 @@ Primary editable file: [`config.lua`](config.lua) (escrow-open). Fine table: [`c
 Config.Debug     = false
 Config.Locale    = 'en'       -- 'en' | 'hr' | 'de' | 'fr' | 'es'
 Config.Currency  = '$'        -- UI symbol only: '$' or '€' (or any string)
-Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'standalone'
+Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'ox' | 'standalone'
+Config.Target    = { provider = 'auto' }  -- 'auto' | 'ox_target' | 'qb-target'
 Config.MDT = {
     provider = 'auto',        -- tk_mdt → ps-mdt → ox_mdt (advanced = manual + resourceName)
     trustedInvokers = { 'ps-mdt', 'tk_mdt' },  -- also gates IssueFine / CreateCommitmentOrder / etc. — see Exports & integration
@@ -381,6 +403,23 @@ Config.UI = {
 }
 ```
 
+### Judicial Police
+
+```lua
+Config.JudicialPolice = {
+    enabled = true,
+    commandJobs    = { 'police', 'sheriff', 'bcso', 'sasp', 'lspd', 'judicial_police' }, -- who can acknowledge/assign
+    commandMinGrade = 4,          -- minimum job grade to count as "command"
+    assignableJobs = { 'police', 'sheriff', 'bcso', 'sasp', 'lspd', 'correctional', 'doc', 'judicial_police' },
+    alarmIntervalMs  = 15000,     -- how often the command alarm repeats
+    dutyToggleCommand = 'jpdezurni',
+    dutyZone = { enabled = true, coords = vector3(0.0, 0.0, 0.0) }, -- ← set to your courthouse entrance
+    noteRecommended = { prisoner_transport = true, court_protection = false },
+}
+```
+
+`commandJobs` / `assignableJobs` are your real job names (QB/ESX/Qbox), not DOJ roles — set them to match your police job structure. `dutyZone.coords` ships as a placeholder; set it like the other courthouse zones above.
+
 ### Archive (how stashes work — important)
 
 Archive is **not** one shared locker for everyone. It is:
@@ -435,7 +474,7 @@ Config.Archive = {
 ```lua
 Config.Webhooks = {
     cases = '', warrants = '', bail = '', fines = '',
-    verdicts = '', admin = '', audit = '',
+    verdicts = '', admin = '', audit = '', judicial = '',
 }
 ```
 
@@ -498,7 +537,7 @@ That channel becomes your **transcript archive** — staff can scroll history an
 - **Or** one shared `#court-transcripts` channel if you prefer a single feed  
 - Keep channels staff-only / read-only for citizens if you want controlled access  
 
-Without `nevera_court_imgbb_key` **and** the matching `nevera_court_wh_*` URL → print still gives `document_a4` in inventory, but **no Discord transcript**.
+By default (`Config.Forms.requireTranscript = true`), the transcript is **mandatory**: if `nevera_court_imgbb_key` and the matching `nevera_court_wh_*` URL aren't configured (or the upload fails), the **print itself is rejected** — before any fee is charged or the form is saved — so there's always a Discord original to catch later tampering. Set `Config.Forms.requireTranscript = false` to go back to optional screenshots, or list form types in `Config.Forms.transcriptExempt` to exempt only those.
 
 > **New to Discord webhooks?** Official guide: [Intro to Webhooks (Discord Support)](https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks)
 
@@ -552,6 +591,8 @@ set nevera_court_wh_audit    "https://discord.com/api/webhooks/..."
 | `nevera_court_wh_admin` | Admin / Supreme Court prints |
 | `nevera_court_wh_audit` | General / catch-all document shots |
 
+> Judicial Police alerts (new requests / claimed / assigned / completed) post as **text** embeds to `nevera_court_log_judicial` (`Config.Webhooks.judicial`) — same system as layer 1, not an image transcript channel.
+
 ---
 
 ## Roles & permissions
@@ -575,6 +616,8 @@ Optional ACE / group mappings: `Config.Permissions`.
 
 Archive access also requires the correct password for that role in `Config.Archive.Passwords`.
 
+Judicial Police access is **job-based**, not a DOJ role: `Config.JudicialPolice.commandJobs` (+ `commandMinGrade`) can acknowledge and assign requests, `assignableJobs` can be assigned and complete them, and `judge` / `supreme_court` / `clerk` can create requests.
+
 ---
 
 ## In-game usage
@@ -584,7 +627,7 @@ Archive access also requires the correct password for that role in `Config.Archi
 | Method | Description |
 |--------|-------------|
 | Keybind | `Config.UI.openKey` (default **F5**) |
-| Courthouse | `ox_target` on `Config.Courthouse` zones |
+| Courthouse | `ox_target` or `qb-target` on `Config.Courthouse` zones |
 | Menus | ox_lib context / radial (where enabled) |
 
 ### Typical criminal flow
@@ -612,6 +655,7 @@ Arrest / Affidavit
 | `/doj_jury_odjava` | Unregister from jury pool |
 | `/doj_commitment` | Commitment orders (custody / DOC / judges) |
 | `/refreshnkz` | Reload penal code from DB (console or admin) |
+| `/jpdezurni` | Toggle Judicial Police standing duty (on/off) |
 
 ### Print flow
 
@@ -668,10 +712,13 @@ Nevera_Court/
 │       ├── 01_nevera_court.sql       # schema (all frameworks; includes title_hr/de/fr/es)
 │       ├── 02_seed_laws_english.sql  # English NKZ base
 │       ├── 03_seed_laws_i18n.sql     # HR + DE + FR + ES titles
-│       └── 04_first_supreme_court.sql
-│       # (no upgrade/ in this release — first install only)
+│       ├── 04_first_supreme_court.sql
+│       ├── 05_migrate_*.sql          # UPGRADE only (existing DBs)
+│       ├── 06_migrate_forms_sig_image.sql  # UPGRADE only
+│       └── 07_judicial_police.sql    # Judicial Police requests table (fresh + existing DBs)
+│   └── companion/README.md           # nevera_printeri is sold separately
 ├── bridge/
-│   ├── framework/                # qb · qbox · esx · standalone
+│   ├── framework/                # qb · qbox · esx · ox · standalone
 │   ├── mdt/                      # ps · tk · ox · advanced
 │   ├── inventory/ · phone/
 │   └── registry.lua · resolve.lua
@@ -755,11 +802,13 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | Laws still English on HR/DE/FR/ES | Run `03_seed_laws_i18n.sql`; set `Config.Locale`; restart |
 | Form half English / half locale | Sync all `public/forms_*` → `dist/forms_*`; restart |
 | `No such export viewDocument…` | Item `export` must match **folder name** casing |
-| Use deletes item / nothing opens | `consume = 0` + start **`nevera_printeri`** |
+| Use deletes item / nothing opens | `consume = 0` + correct `export` folder name |
 | Save / Print error | Add `document_a4` + PNG; check `[sv_printer]` |
 | Archive won’t open | Role + `Config.Archive.Passwords` |
 | Discord screenshots fail | `nevera_court_imgbb_key` + `nevera_court_wh_*` |
-| migrate i18n “duplicate column” | N/A in this release (first-install SQL only) |
+| migrate i18n “duplicate column” | Fresh install: skip `05_*`. Existing DB: use migrate scripts once. |
+| Print rejected: “requires a Discord transcript” | Expected — `Config.Forms.requireTranscript = true` by default. Configure `nevera_court_imgbb_key` + `nevera_court_wh_*`, or set `requireTranscript = false` / add the type to `transcriptExempt`. |
+| Judicial Police alarm reaches no one | Check `Config.JudicialPolice.commandJobs` + `commandMinGrade` match your real job names/grades, and that command staff are online. |
 
 ---
 
@@ -774,9 +823,9 @@ Buyers should use **Discord** and **Tebex**. That is the standard setup for escr
 
 Replace placeholders before you publish:
 
-- Discord: https://discord.gg/FgWHt4j8Qu
-- Store: `https://YOUR_STORE.tebex.io/` *(replace when Tebex is live)*
-- Docs: `Install/README.md` (in the purchase pack)
+- Discord: https://discord.gg/brGTHQRYys
+- Store: https://nevera.tebex.io/
+- Docs: https://asociety.net/docs/#/docs/sudstvo/overview
 
 ### When opening a support ticket, include
 
@@ -809,7 +858,7 @@ Planned / possible follow-ups (not a commitment — update before each release):
 - [ ] More inventory / phone edge-case bridges  
 - [ ] Expanded civil procedure templates  
 - [ ] Live ESX Legacy end-to-end QA checklist in docs  
-- [ ] Public docs site (optional)  
+- [ ] Public docs: https://asociety.net/docs/#/ 
 
 ---
 
@@ -827,6 +876,6 @@ Purchase grants a license for **your** FiveM server(s) under Tebex / Cfx.re Asse
 
 **Nevera Court** `v1.0.0` · Built for serious DOJ roleplay
 
-[Discord](https://discord.gg/FgWHt4j8Qu) · Tebex · `Install/`
+[Discord](https://discord.gg/brGTHQRYys) · [Tebex](https://nevera.tebex.io/) · [Docs](https://asociety.net/docs/#/docs/sudstvo/overview)
 
 </div>
