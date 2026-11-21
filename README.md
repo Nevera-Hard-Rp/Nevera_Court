@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://i.imgur.com/7WqUGwg.png" alt="Nevera Court — FiveM DOJ / Court System" width="100%">
+<img src="https://i.imgur.com/4ZY7wOO.png" alt="Nevera Court — FiveM DOJ / Court System" width="100%">
 
 # Nevera Court
 
