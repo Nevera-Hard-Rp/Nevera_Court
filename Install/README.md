@@ -5,11 +5,12 @@ Do steps **in order**. Keep this folder with the resource.
 ```
 Install/
   README.md
-  sql/01 … 04, 07, 08  ← first install
+  sql/01 … 04, 07, 08, 09, 10  ← first install
   sql/05_* and 06_*    ← upgrade only (existing DBs)
   items/ox_inventory_document_a4.lua
   items/qbcore_document_a4.lua     ← qb-core + qb-inventory
   items/qbx_core_document_a4.lua   ← Qbox: inventory how-to
+  items/bolt_cutter.lua            ← optional: house-arrest bracelet cutter
 ```
 
 **In-game usage:** F5 (default `Config.UI.openKey`) / radial — see root `README.md` (Features).
