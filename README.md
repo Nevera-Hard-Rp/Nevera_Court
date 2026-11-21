@@ -373,11 +373,11 @@ Changing the symbol does **not** convert amounts. Adjust the penal code (in-game
 Config.FineCalculator = {
     maxTotal = 250000,
     categories = {
-        { id = 'pljacka', baseAmount = 18000 },                          -- built-in (translated)
+        { id = 'robbery', baseAmount = 18000 },                          -- built-in (translated)
         { id = 'illegal_fishing', label = 'Illegal Fishing', baseAmount = 1500 },  -- your own
     },
     modifiers = {
-        { id = 'povratnik', multi = 1.50 },
+        { id = 'repeat_offender', multi = 1.50 },
     },
 }
 ```
