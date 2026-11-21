@@ -20,30 +20,30 @@ Config.FineCalculator = {
     maxTotal = 250000,
 
     categories = {
-        { id = 'ubojstvo',           baseAmount = 50000 },
-        { id = 'ubojstvo_2',         baseAmount = 60000 },
-        { id = 'pokusaj_ubojstva',   baseAmount = 35000 },
-        { id = 'napad',              baseAmount = 3000  },
-        { id = 'napad_opasno',       baseAmount = 20000 },
-        { id = 'pljacka',            baseAmount = 18000 },
-        { id = 'otmica',             baseAmount = 50000 },
-        { id = 'trgovina_drogom',    baseAmount = 25000 },
-        { id = 'posjedovanje_droge', baseAmount = 10000 },
-        { id = 'kradja',             baseAmount = 6000  },
-        { id = 'kradja_vozila',      baseAmount = 6000  },
-        { id = 'bjekstvo',           baseAmount = 5000  },
-        { id = 'oruzje',             baseAmount = 20000 },
-        { id = 'korupcija',          baseAmount = 25000 },
+        { id = 'murder',              baseAmount = 50000 },
+        { id = 'aggravated_murder',   baseAmount = 60000 },
+        { id = 'attempted_murder',    baseAmount = 35000 },
+        { id = 'assault',             baseAmount = 3000  },
+        { id = 'aggravated_assault',  baseAmount = 20000 },
+        { id = 'robbery',             baseAmount = 18000 },
+        { id = 'kidnapping',          baseAmount = 50000 },
+        { id = 'drug_trafficking',    baseAmount = 25000 },
+        { id = 'drug_possession',     baseAmount = 10000 },
+        { id = 'theft',               baseAmount = 6000  },
+        { id = 'vehicle_theft',       baseAmount = 6000  },
+        { id = 'evading_police',      baseAmount = 5000  },
+        { id = 'illegal_weapon',      baseAmount = 20000 },
+        { id = 'corruption',          baseAmount = 25000 },
         -- Example of your own offence:
         -- { id = 'illegal_fishing', label = 'Illegal Fishing', baseAmount = 1500 },
     },
 
     modifiers = {
-        { id = 'povratnik',    multi = 1.50 },  -- repeat offender
-        { id = 'organizirani', multi = 1.25 },  -- organized crime
-        { id = 'maloljetnik',  multi = 1.30 },  -- minor victim
-        { id = 'olakotne',     multi = 0.75 },  -- mitigating circumstances
-        { id = 'saradnja',     multi = 0.80 },  -- cooperation with police
+        { id = 'repeat_offender',     multi = 1.50 },
+        { id = 'organized_crime',     multi = 1.25 },
+        { id = 'minor_victim',        multi = 1.30 },
+        { id = 'mitigating',          multi = 0.75 },
+        { id = 'police_cooperation',  multi = 0.80 },
         -- { id = 'holiday', label = 'Holiday season (+10%)', multi = 1.10 },
     },
 }
