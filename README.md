@@ -37,22 +37,47 @@
 
 ## Changelog
 
-### 1.0.0 — Initial public release
+### 1.0.0 — Initial release
 
-First public Cfx.re / Tebex release:
+**Core court**
+- Full DOJ panel: cases, 37 A4 forms × 5 languages, warrants, bail, hearings, jury, fines, penal code, archive
+- Hard-RP verdict flow: guilty verdict → commitment order → custody / DOC executes at prison intake
+- Official court seal, Discord logs + court transcripts (optional, `Config.Forms.requireTranscript`)
+- Framework bridges: ESX / QBCore / Qbox / standalone + multi inventory / phone / MDT / prison
+- `ox_target` or `qb-target`; courtroom projector (host whitelist); gavel with real sound heard by everyone near the judge (`/gavel`)
+- One money symbol everywhere (`Config.Currency`) and your own server name (`Config.Branding`) in UI, seal, logs and all A4 forms
+- **In-game penal code editor** (prices, prison, texts in 5 languages, new articles) + fine calculator table in `config_fines.lua`
 
-- Full DOJ panel (cases, 37 A4 forms × 5 languages, warrants, bail, hearings, jury, fines, NKZ, archive)
-- Framework bridges (ESX / QB / Qbox / OX / standalone) + multi-inventory / phone / MDT / prison
-- Built-in document viewer on Use (`nevera_printeri` optional)
-- `ox_target` or `qb-target`; courtroom projector (host whitelist) + gavel
-- Hard-RP commitment orders; official seal; Discord webhooks
-- Default currency `€`
-- **Judicial Police** module: standing 24/7 court-security duty + prisoner transport requests from court → police, with an optional judge-initiated court-protection request for high-risk trials
-- Command-chain alarm (deputy chief / chief / duty officer only, `Config.JudicialPolice.commandJobs` + `commandMinGrade`) that repeats until acknowledged, then lets command assign one or more officers; court gets a confirmation of who claimed it
-- Duty toggle (`/jpdezurni` or the courthouse-entrance target) + online-officer assignment picker in the **Judicial Police** NUI tab, in all 5 languages
-- Mandatory Discord court transcripts (`Config.Forms.requireTranscript = true`) — printing a form without its Discord transcript image is rejected before any fee is charged; use `Config.Forms.transcriptExempt` to exclude specific form types
+**Judicial Police**
+- 24/7 court-security duty (`/jpdezurni` or courthouse-entrance target), prisoner transport requests, optional court protection for high-risk trials
+- Command-chain alarm (`Config.JudicialPolice.commandJobs` + `commandMinGrade`) repeating until acknowledged, then officer assignment
 
-Docs: [asociety.net Court docs](https://asociety.net/docs/#/docs/sudstvo/overview) · Support: [discord.gg/brGTHQRYys](https://discord.gg/brGTHQRYys)
+**Court services** (ox_lib menus: `/court`, DOJ menu → *Court services*, case menu → *Case tools*, courthouse eye)
+- **Bar exam & licences** — multiple-choice exam, fee, cooldown, judge approval, automatic DOJ role + bar number, revoke
+- **Attorney appointments** — citizens request a time with a licensed attorney; accept / decline / reschedule / done
+- **DOJ treasury** — fines, court / exam / expungement fees and forfeited bail are logged; optional society push (qb-banking, qb-management, Renewed-Banking, okokBanking, esx_addonaccount)
+- **Appeals** to the Supreme Court — granting reopens the case, clears the verdict and cancels pending commitment orders / unpaid fines
+- **Expungement** — clear an old conviction; `exports.nevera_court:GetCriminalRecord(citizenid)` ignores expunged cases
+- **Plea deals** — prosecutor offers → defense accepts → judge approves = guilty verdict through the normal pipeline
+- **Evidence per case** — images / video / links / notes, shown on the courtroom projector in one click
+- **Courtroom session** — "All rise", "Be seated", "Order in the court", recess; minutes (manual + automatic + optional chat capture) sent to Discord
+- **Public court board** — upcoming hearings + recent public verdicts (eye point + `/courtboard`)
+
+**Court procedure** (each module has its own `Config.Modules` toggle)
+- **Arraignment / plea** — guilty · not guilty · no contest; case moves to pre-trial or awaiting verdict; **public defender** auto-assigned from licensed attorneys
+- **Bench warrant on failure to appear** — one click: active arrest warrant (`BW-YYYY-####`), bail forfeited to treasury, police notified + MDT sync
+- **Probation & community service** — suspended prison minutes, conditions, work points with scenario + progress (`/court` → *My sentences*); new guilty verdict auto-revokes probation
+- **Restraining orders** — distance check every 5 s with grace time; warns the restrained person, alerts the protected one and police (blip), optional auto-warrant
+- **Pre-trial detention limits** — HUT starts a detention clock; judge extends / releases, warnings before expiry, verdict closes it
+- **Contempt of court** — judge picks a nearby player: on-the-spot fine and/or prison minutes, written to the minutes
+- **House arrest + ankle monitor** — judge sets the home address + radius; visible bracelet on the leg, optional live police tracking, alert when the person leaves the zone, auto-revoke after X violations, bolt cutter to cut it (police alerted + warrant)
+
+**Editions & customization**
+- `Config.Edition = 'full' | 'lite'` — Lite keeps only the core court; every module can be switched on/off in `Config.Modules`
+- Escrow-open: `config.lua`, `config_fines.lua`, `locales/`, `bridge/`, `web/`, `Install/` and **`editable/`** hooks to plug in your own scripts
+- Performance: server role cache and batched cron queries; client idle ≈ 0.00 ms
+
+Docs: [Nevera Docs — Court](https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/overview) · Support: [discord.gg/MUw2uR5MZ6](https://discord.gg/MUw2uR5MZ6)
 
 ---
 
@@ -73,10 +98,10 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | | |
 |---|---|
 | **Version** | `1.0.0` (`fxmanifest.lua`) |
-| **Frameworks** | **ESX** · QBCore · Qbox · OX_Core · Standalone (`Config.Framework = 'auto'`) |
+| **Frameworks** | **ESX** · QBCore · Qbox · Standalone (`Config.Framework = 'auto'`) |
 | **Inventory** | ox · qs · qb · ps · codem · tgiann · origen · ak47 (`auto`) |
 | **Phone** | LB · Quasar · YSeries · 17mov · GKS · NPWD · qb-phone (`auto`) |
-| **MDT** | Bridge for tk_mdt (full) · Advanced (manual) · ps-mdt (patch) · ox_mdt (events) — see `Install/MDT.md` |
+| **MDT** | Bridge for tk_mdt (full) · Advanced (manual) · ps-mdt (patch) — see `Install/MDT.md` |
 | **UI** | React NUI + ox_lib menus / alerts / targets |
 | **Languages** | `en` · `hr` · `de` · `fr` · `es` — **full UI + A4 forms + NKZ titles** (`Config.Locale`) |
 
@@ -118,7 +143,8 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Jury pool registration · selection · voir dire (`Config.Jury`: 6–12)
 
 ### Fines & economy
-- Editable **`config_fines.lua`** — every fine / bail amount is buyer-editable
+- **Penal code editor in-game** (`/courtlaws` or `/court` → *Penal code editor*) — change fines, prison time, severity and texts (5 languages), add / deactivate articles; saved to the database and active immediately
+- **Fine calculator** table (offences + modifiers) in **`config_fines.lua`**
 - **`Config.Currency = '$'` or `'€'`** (or any symbol) — UI display only
 - Rookie fine multiplier · civil damages range (`Config.Economy`)
 - Pending fines on login · optional `peleg-billing` (pcall-safe)
@@ -146,15 +172,39 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Optional per-role stashes (`UseRoleStashes = true`): citizen personal stash → police / DA / defense / judge / Supreme Court stacks
 - Allowed item: `document_a4` · configurable archive locations
 
+### Court services (`/court`, case menu → *Case tools*, courthouse eye)
+- **Bar exam & licences** — multiple-choice exam, fee, cooldown, judge approval, automatic DOJ role + bar number, revoke
+- **Attorney appointments** — citizens book a licensed attorney; accept / decline / reschedule / done
+- **DOJ treasury** — fines, fees and forfeited bail logged; optional society push (qb-banking, qb-management, Renewed-Banking, okokBanking, esx_addonaccount)
+- **Appeals** to the Supreme Court — granting reopens the case and cancels pending commitment orders / unpaid fines
+- **Expungement** — clear an old conviction (ignored by `GetCriminalRecord`)
+- **Plea deals** — prosecutor offers → defense accepts → judge approves = guilty verdict
+- **Evidence per case** — images / video / links / notes, one click to the courtroom projector
+- **Courtroom session** — all rise / be seated / order / recess + minutes to Discord
+- **Public court board** — upcoming hearings + recent public verdicts (`/courtboard`)
+
+### Court procedure
+- **Arraignment / plea** — guilty · not guilty · no contest + **public defender** auto-assignment
+- **Bench warrant on failure to appear** — arrest warrant `BW-YYYY-####`, bail forfeited, police + MDT notified
+- **Probation & community service** — suspended prison, conditions, work points (`/court` → *My sentences*), auto-revoke on a new conviction
+- **Restraining orders** — distance check with grace time, alerts to the protected person + police blip, optional auto-warrant
+- **Pre-trial detention limits** — HUT starts the clock, judge extends / releases, warnings before expiry
+- **Contempt of court** — on-the-spot fine and/or prison minutes for a nearby player
+- **House arrest + ankle monitor** — home radius (default 100 m), bracelet prop on the leg, live police tracking blips (config switch), warning → police alert with blip → optional auto-revoke + warrant `HA-YYYY-####`, cutting the bracelet with a cutter item, automatic end after the real days, `/bracelets` list for police / judges
+
+### Editions & hooks
+- `Config.Edition = 'full' | 'lite'` + per-module switches in `Config.Modules`
+- `editable/sv_hooks.lua` · `editable/cl_hooks.lua` (escrow-open) — `OnVerdict`, `OnMoneyIn`, `OnCourtEvent`, `OnCourtCall`, `OnGavel`
+
 ### Admin & audit
 - Role assignment (Supreme Court admin panel)
 - Audit log for key DOJ actions
 - Discord: system event logs + **printed form transcripts** (image archive per channel)
 
 ### Framework & MDT bridges (new)
-- **ESX** + QBCore + Qbox + OX_Core + Standalone (`Config.Framework = 'auto'`)
+- **ESX** + QBCore + Qbox + Standalone (`Config.Framework = 'auto'`)
 - MDT push: warrants / cases / verdicts / commitments → `Install/MDT.md`
-- Honest sync levels: tk_mdt full · Advanced manual · ps-mdt patch · ox_mdt events
+- Honest sync levels: tk_mdt full · Advanced manual · ps-mdt patch
 - `Config.MDT.trustedInvokers` gates every cross-resource write export — `IssueFine`, `CreateFormProgrammatically`, `CreateCommitmentOrder`, `CanExecuteCommitment`, `GetBakedFormHtml` — to your own resource plus this allowlist
 
 ### Localization
@@ -173,8 +223,8 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | Framework (**ESX** / QB / Qbox) or `standalone` | **Yes** |
 | [ox_inventory](https://github.com/overextended/ox_inventory) **or** [qb-inventory](https://github.com/qbcore-framework/qb-inventory) | **Yes** for print / archive `document_a4` (`Config.Inventory.provider = 'auto'`; force `'qb-inventory'` on mixed servers) |
 | [ox_target](https://github.com/overextended/ox_target) **or** [qb-target](https://github.com/qbcore-framework/qb-target) | Recommended (courthouse / archive / projector eye). F5 panel works without either. `Config.Target.provider = 'auto'` |
-| [nevera_printeri](https://asociety.net/docs/#/docs/printeri/overview) | **Optional, sold separately** — physical printers. Court already views filled forms on Use. |
-| MDT (ps-mdt / tk_mdt / ox_mdt / Advanced) | Optional — `Install/MDT.md` |
+| [nevera_printeri](https://nevera-hard-rp.com/Nevera-Docs/#/docs/printeri/overview) | **Optional, sold separately** — physical printers. Court already views filled forms on Use. |
+| MDT (ps-mdt / tk_mdt / Advanced) | Optional — `Install/MDT.md` |
 | Phone / prison | Optional |
 | Dispatch (ps-dispatch / cd_dispatch / qs-dispatch) | Optional — escalates the Judicial Police command alarm (`Config.JudicialPolice.notify.dispatch`) |
 | [peleg-billing](https://github.com/Pelegrino/peleg-billing) | Optional — invoices use `Config.Billing.issuerJob`; filing prices are `Config.Fees` |
@@ -202,10 +252,10 @@ Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `Get
 Same schema for every framework — **fresh install**, run in order:
 
 ```text
-Install/sql/01 → 02 → 03 → 04 → 07
+Install/sql/01 → 02 → 03 → 04 → 07 → 08 → 09 → 10
 ```
 
-Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police requests table) is safe on both fresh and existing databases. See `Install/README.md`.
+Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police) and `08` (court services: licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) and `09` (court procedure: plea, probation / community service, restraining orders, detention) and `10` (house arrest) are safe on both fresh and existing databases. See `Install/README.md`.
 
 **Verify:**
 
@@ -229,6 +279,8 @@ SELECT * FROM doj_roles WHERE role = 'supreme_court';
 
 **ESX + ox_inventory:** use the **ox** file only.  
 **Do not** paste a second `document_a4` from a printer item file (overwrites Court).
+
+**House arrest cutter (optional):** add the `bolt_cutter` item from `Install/items/bolt_cutter.lua` or set your own item in `Config.HouseArrest.cutterItem`.
 
 Copy `Install/items/document_a4.png` → `ox_inventory/web/images/` **or** `qb-inventory/html/images/`.
 
@@ -281,11 +333,13 @@ Primary editable file: [`config.lua`](config.lua) (escrow-open). Fine table: [`c
 ```lua
 Config.Debug     = false
 Config.Locale    = 'en'       -- 'en' | 'hr' | 'de' | 'fr' | 'es'
-Config.Currency  = '$'        -- UI symbol only: '$' or '€' (or any string)
-Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'ox' | 'standalone'
+Config.Currency  = '€'        -- money symbol everywhere: '€', '$', '£', …
+Config.Branding  = { ServerName = 'Los Santos', PenalCode = 'PC' }  -- your server name in UI / seal / forms
+Config.Edition   = 'full'     -- 'full' | 'lite' (+ Config.Modules to force single modules on/off)
+Config.Framework = 'auto'     -- 'esx' | 'qb' | 'qbox' | 'standalone'
 Config.Target    = { provider = 'auto' }  -- 'auto' | 'ox_target' | 'qb-target'
 Config.MDT = {
-    provider = 'auto',        -- tk_mdt → ps-mdt → ox_mdt (advanced = manual + resourceName)
+    provider = 'auto',        -- tk_mdt → ps-mdt (advanced = manual + resourceName)
     trustedInvokers = { 'ps-mdt', 'tk_mdt' },  -- also gates IssueFine / CreateCommitmentOrder / etc. — see Exports & integration
 }
 -- MDT sync levels + ps-mdt patch: Install/MDT.md
@@ -303,19 +357,26 @@ Config.Currency = '$'   -- US / dollar servers
 Config.Currency = '€'   -- EU / euro servers
 ```
 
-Changing the symbol does **not** convert amounts. Edit the numbers in `config_fines.lua` / `Config.Economy` to match your server economy.
+Changing the symbol does **not** convert amounts. Adjust the penal code (in-game editor), `config_fines.lua` and `Config.Economy` to your server economy.
 
-### Fines & bail amounts (fully editable)
+### Fines — where the amounts live
 
-All preset fine / bail values live in **[`config_fines.lua`](config_fines.lua)** (escrow-open). Change any `fine`, `bail`, `hut`, or `label` — no code edits needed.
+| What | Where | How to change |
+|------|-------|---------------|
+| **Penal code** (fine & prison range per article — used for verdicts) | database `doj_laws` | **In-game:** `/courtlaws` or `/court` → *Penal code editor* (Supreme Court or ACE `nevera.sudstvo.admin`). Prices, prison, severity, category, name & description in every language, new / deactivated articles. Active immediately. |
+| **Fine calculator** (panel → Fines tab) | [`config_fines.lua`](config_fines.lua) | Edit `baseAmount` / `multi`, add your own offences with a `label`. Restart the resource. |
+| Court fees, exam / expungement fees | `config.lua` → `Config.Fees`, `Config.Exams`, `Config.Expungement` | Edit the numbers. |
 
 ```lua
-Config.Fines['minor_traffic'] = {
-    label = 'Minor Traffic Violation',
-    fine  = 500,    -- ← change this
-    bail  = 750,    -- ← change this (often ~150% of fine)
-    hut   = false,
-    category = 'traffic',
+Config.FineCalculator = {
+    maxTotal = 250000,
+    categories = {
+        { id = 'pljacka', baseAmount = 18000 },                          -- built-in (translated)
+        { id = 'illegal_fishing', label = 'Illegal Fishing', baseAmount = 1500 },  -- your own
+    },
+    modifiers = {
+        { id = 'povratnik', multi = 1.50 },
+    },
 }
 ```
 
@@ -329,16 +390,15 @@ Config.Economy = {
 }
 ```
 
-Ship defaults are calibrated to a reference economy (see comments at the top of `config_fines.lua`). **Adjust for your city** before go-live.
+Defaults are a reference economy. **Adjust for your city** before go-live.
 
-### MDT sync levels (before you market “4 MDTs”)
+### MDT sync levels (before you market the MDT bridges)
 
 | Provider | Level |
 |----------|--------|
 | `tk_mdt` | Full sync (exports) |
 | `advanced` | Partial/Full — set `provider` + `resourceName` (no auto-guess) |
 | `ps-mdt` | Events + optional patch (`Install/patches/ps-mdt_nevera_warrant.lua`) |
-| `ox_mdt` | Events only (API WIP) |
 
 ### Map locations (courthouse, desks, archives) — **you must set these**
 
@@ -468,6 +528,42 @@ Config.Archive = {
 3. Restart / `ensure Nevera_Court` → test target prompt.  
 4. Each player uses **their role code**; they can use **any** archive point on the map.  
 5. Leave `AllowedItems = { 'document_a4' }` unless you intentionally want other items in the stash.
+
+### Editions & modules
+
+```lua
+Config.Edition = 'full'      -- 'full' | 'lite'
+Config.Modules = {
+    jury = nil, judicial_police = nil, archive = nil, projector = nil,  -- nil = follow the edition
+    exams = nil, appointments = nil, treasury = nil, appeals = nil,
+    alt_sentences = false,   -- example: switch one module off
+}
+```
+
+### Court services & procedure
+
+| Block | What you set |
+|-------|--------------|
+| `Config.Extras` | `/court` command + courthouse eye option |
+| `Config.Exams` | questions, pass score, fee, cooldown |
+| `Config.Appointments` · `Config.Appeals` · `Config.Expungement` · `Config.PleaDeals` | roles, fees, time windows |
+| `Config.Treasury` | ledger + optional society account push |
+| `Config.Evidence` · `Config.CourtSession` · `Config.CourtBoard` | roles, radius, minutes / board size, `/courtboard` |
+| `Config.Arraignment` · `Config.BenchWarrant` | public defender roles, bail forfeit |
+| `Config.AltSentences` | community-service work points + scenario |
+| `Config.RestrainingOrders` · `Config.Detention` · `Config.Contempt` | radius / grace, max hours + extensions, max fine / minutes |
+| `Config.HouseArrest` | radius, grace, auto-revoke, `liveTracking` on/off, police jobs, bracelet prop + offset, `cutterItem` |
+| `Config.LawEditor` | roles / ACE for the in-game penal code editor (`/courtlaws`) |
+
+### Hooks (`editable/`)
+
+```lua
+function CourtHooks.OnVerdict(case_number, verdict, judgeSrc) end   -- server
+function CourtHooks.OnMoneyIn(amount, source_type, reference) end   -- server
+function CourtHooks.OnCourtEvent(name, data) end                    -- server
+function CourtHooks.OnCourtCall(call, text) end                     -- client
+function CourtHooks.OnGavel(volume) end                             -- client
+```
 
 ### System Discord webhooks
 
@@ -655,6 +751,11 @@ Arrest / Affidavit
 | `/doj_jury_odjava` | Unregister from jury pool |
 | `/doj_commitment` | Commitment orders (custody / DOC / judges) |
 | `/refreshnkz` | Reload penal code from DB (console or admin) |
+| `/courtlaws` | In-game penal code editor (Supreme Court / ACE admin) |
+| `/court` | Court services + procedure menu (also *My sentences* for citizens) |
+| `/courtboard` | Public court board (hearings + verdicts) |
+| `/bracelets` | Ankle monitors: everyone on house arrest, live status + GPS (police / judges) |
+| `/gavel` | Strike the gavel (judge) |
 | `/jpdezurni` | Toggle Judicial Police standing duty (on/off) |
 
 ### Print flow
@@ -715,14 +816,18 @@ Nevera_Court/
 │       ├── 04_first_supreme_court.sql
 │       ├── 05_migrate_*.sql          # UPGRADE only (existing DBs)
 │       ├── 06_migrate_forms_sig_image.sql  # UPGRADE only
-│       └── 07_judicial_police.sql    # Judicial Police requests table (fresh + existing DBs)
+│       ├── 07_judicial_police.sql    # Judicial Police requests table (fresh + existing DBs)
+│       ├── 08_court_extras.sql       # court services (licences, appointments, treasury, appeals, …)
+│       ├── 09_court_procedure.sql    # plea, probation, restraining orders, detention
+│       └── 10_house_arrest.sql       # house arrest + ankle monitor
 │   └── companion/README.md           # nevera_printeri is sold separately
 ├── bridge/
-│   ├── framework/                # qb · qbox · esx · ox · standalone
-│   ├── mdt/                      # ps · tk · ox · advanced
+│   ├── framework/                # qb · qbox · esx · standalone
+│   ├── mdt/                      # ps · tk · advanced
 │   ├── inventory/ · phone/
 │   └── registry.lua · resolve.lua
 ├── client/ · server/ · shared/ · locales/
+├── editable/                     # open hooks (sv_hooks.lua / cl_hooks.lua)
 ├── web/src · web/public · web/dist
 ├── config.lua · config_fines.lua
 └── fxmanifest.lua
@@ -735,7 +840,7 @@ Typically open (`escrow_ignore`):
 - `config.lua` · `config_fines.lua`
 - `locales/**`
 - `bridge/**`
-- `sql/**` · `Install/**`
+- `Install/**` · `editable/**`
 - `web/**` (full NUI source + rebuild)
 
 Encrypted on release: core `server/` + `client/` logic (except files left open by the author).
@@ -743,6 +848,9 @@ Encrypted on release: core `server/` + `client/` logic (except files left open b
 ---
 
 ## Development — rebuild NUI
+
+> `web/dist/court_extras.js` and `web/dist/gavel.wav` live in `web/public/` and are copied by Vite — keep them.
+> Currency, branding and the gavel sound work **without** a rebuild.
 
 If you change React UI or forms source:
 
@@ -775,6 +883,10 @@ Primary export names are **English**. Croatian names are legacy aliases. `Config
 | `GetPlayerRoles` / `HasRole` | Roles |
 | `CreateCommitmentOrder` / `CanExecuteCommitment` | Prison |
 | `GetJury` / `CountAvailableJurors` | Jury |
+| `GetCriminalRecord` / `IsCaseExpunged` | Criminal record (expunged cases excluded) |
+| `IsOnHouseArrest` | House arrest |
+| `HasLicense` | Bar licence |
+| `GetTreasuryBalance` / `TreasuryDeposit` | DOJ treasury |
 | `GetHearingsForCase` / `GetNextHearing` | Hearings |
 | `GetFormById` / `GetFormsForCase` / `CreateFormProgrammatically` / `GetBakedFormHtml` | Forms |
 
@@ -823,9 +935,9 @@ Buyers should use **Discord** and **Tebex**. That is the standard setup for escr
 
 Replace placeholders before you publish:
 
-- Discord: https://discord.gg/brGTHQRYys
+- Discord: https://discord.gg/MUw2uR5MZ6
 - Store: https://nevera.tebex.io/
-- Docs: https://asociety.net/docs/#/docs/sudstvo/overview
+- Docs: https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/overview
 
 ### When opening a support ticket, include
 
@@ -858,7 +970,7 @@ Planned / possible follow-ups (not a commitment — update before each release):
 - [ ] More inventory / phone edge-case bridges  
 - [ ] Expanded civil procedure templates  
 - [ ] Live ESX Legacy end-to-end QA checklist in docs  
-- [ ] Public docs: https://asociety.net/docs/#/ 
+- [x] Public docs: https://nevera-hard-rp.com/Nevera-Docs/#/
 
 ---
 
@@ -876,6 +988,6 @@ Purchase grants a license for **your** FiveM server(s) under Tebex / Cfx.re Asse
 
 **Nevera Court** `v1.0.0` · Built for serious DOJ roleplay
 
-[Discord](https://discord.gg/brGTHQRYys) · [Tebex](https://nevera.tebex.io/) · [Docs](https://asociety.net/docs/#/docs/sudstvo/overview)
+[Discord](https://discord.gg/MUw2uR5MZ6) · [Tebex](https://nevera-rp.tebex.io/) · [Docs](https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/overview)
 
 </div>
