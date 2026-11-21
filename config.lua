@@ -490,9 +490,18 @@ Config.Economy = {
 --  ARCHIVE
 -- ============================================================
 
+-- HOW THE ARCHIVE WORKS (server owners — set this up before going live):
+--   1) Locations = the physical spots on YOUR map where players open the archive
+--      (City Hall, police station, hospital, law office …). Stand there in-game,
+--      copy the coords and add one row per spot. Rows left at 0,0,0 are ignored.
+--   2) Passwords = one password per DOJ role. CHANGE ALL DEFAULTS and give each
+--      organisation only its own password (police → police, judges → judge …).
+--   3) Every role has its own shared stash (doj_archive_police, doj_archive_judge …).
+--      Citizens all use the same `citizen` password, but each citizen opens a
+--      PERSONAL stash (doj_archive_<citizenid>) — nobody sees anyone else's papers.
+--   4) Any player can use ANY archive point with their own role password.
 Config.Archive = {
-    -- Required: password per role to open that role's document stash.
-    -- Change these before going live. Keys must match Enums.Roles (English).
+    -- Password per role (keys must match Enums.Roles). CHANGE THESE before going live.
     Passwords = {
         citizen            = 'citizen123',
         police             = 'police123',
