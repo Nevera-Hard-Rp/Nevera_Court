@@ -13,7 +13,7 @@
 [![Locale](https://img.shields.io/badge/locale-EN%20%7C%20HR%20%7C%20DE%20%7C%20FR%20%7C%20ES-purple?style=for-the-badge)](#localization)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](#license--support)
 
-**Cases · Forms · Warrants · Bail · Hearings · Jury · Fines · Penal Code · Archive · MDT · Discord**
+**Cases · Forms · Warrants · Bail · Hearings · Jury · Fines · Penal Code · House Arrest · Archive · MDT · Discord**
 
 [Overview](#overview) ·
 [Features](#features) ·
@@ -57,14 +57,15 @@
 - **Attorney appointments** — citizens request a time with a licensed attorney; accept / decline / reschedule / done
 - **DOJ treasury** — fines, court / exam / expungement fees and forfeited bail are logged; optional society push (qb-banking, qb-management, Renewed-Banking, okokBanking, esx_addonaccount)
 - **Appeals** to the Supreme Court — granting reopens the case, clears the verdict and cancels pending commitment orders / unpaid fines
-- **Expungement** — clear an old conviction; `exports.nevera_court:GetCriminalRecord(citizenid)` ignores expunged cases
+- **Expungement** — clear an old conviction; `exports['Nevera_Court']:GetCriminalRecord(citizenid)` ignores expunged cases
 - **Plea deals** — prosecutor offers → defense accepts → judge approves = guilty verdict through the normal pipeline
 - **Evidence per case** — images / video / links / notes, shown on the courtroom projector in one click
 - **Courtroom session** — "All rise", "Be seated", "Order in the court", recess; minutes (manual + automatic + optional chat capture) sent to Discord
 - **Public court board** — upcoming hearings + recent public verdicts (eye point + `/courtboard`)
 
 **Court procedure** (each module has its own `Config.Modules` toggle)
-- **Arraignment / plea** — guilty · not guilty · no contest; case moves to pre-trial or awaiting verdict; **public defender** auto-assigned from licensed attorneys
+- **Arraignment / plea** — guilty · not guilty · no contest; case moves to pre-trial or awaiting verdict
+- **Right to counsel (public defender)** — if the defendant has no attorney, the state assigns a public defender to the case with one click (judge, clerk or the defendant can request it; online public defenders first); both are notified
 - **Bench warrant on failure to appear** — one click: active arrest warrant (`BW-YYYY-####`), bail forfeited to treasury, police notified + MDT sync
 - **Probation & community service** — suspended prison minutes, conditions, work points with scenario + progress (`/court` → *My sentences*); new guilty verdict auto-revokes probation
 - **Restraining orders** — distance check every 5 s with grace time; warns the restrained person, alerts the protected one and police (blip), optional auto-warrant
@@ -184,7 +185,8 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - **Public court board** — upcoming hearings + recent public verdicts (`/courtboard`)
 
 ### Court procedure
-- **Arraignment / plea** — guilty · not guilty · no contest + **public defender** auto-assignment
+- **Arraignment / plea** — guilty · not guilty · no contest
+- **Right to counsel (public defender)** — if the defendant has no attorney, the state assigns a public defender to the case with one click (judge, clerk or the defendant can request it; online public defenders first); both are notified
 - **Bench warrant on failure to appear** — arrest warrant `BW-YYYY-####`, bail forfeited, police + MDT notified
 - **Probation & community service** — suspended prison, conditions, work points (`/court` → *My sentences*), auto-revoke on a new conviction
 - **Restraining orders** — distance check with grace time, alerts to the protected person + police blip, optional auto-warrant
@@ -933,10 +935,8 @@ Buyers should use **Discord** and **Tebex**. That is the standard setup for escr
 | **Discord** | Install help, bugs, feature requests, RP questions |
 | **Tebex** | Purchase, invoices, license, re-download |
 
-Replace placeholders before you publish:
-
 - Discord: https://discord.gg/MUw2uR5MZ6
-- Store: https://nevera.tebex.io/
+- Store: https://nevera-rp.tebex.io/
 - Docs: https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/overview
 
 ### When opening a support ticket, include
@@ -966,7 +966,7 @@ Primary buyer support remains **Discord + Tebex**.
 
 Planned / possible follow-ups (not a commitment — update before each release):
 
-- [ ] Extra locales beyond EN / HR / DE / FR  
+- [ ] Extra locales beyond EN / HR / DE / FR / ES  
 - [ ] More inventory / phone edge-case bridges  
 - [ ] Expanded civil procedure templates  
 - [ ] Live ESX Legacy end-to-end QA checklist in docs  
