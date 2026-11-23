@@ -5,7 +5,7 @@ Do steps **in order**. Keep this folder with the resource.
 ```
 Install/
   README.md
-  sql/01 … 04, 07, 08, 09, 10  ← first install
+  sql/01 … 04, 07, 08, 09, 10, 11  ← first install
   sql/05_* and 06_*    ← upgrade only (existing DBs)
   items/ox_inventory_document_a4.lua
   items/qbcore_document_a4.lua     ← qb-core + qb-inventory
@@ -26,7 +26,7 @@ Install/
 | `ox_inventory` **or** `qb-inventory` | Yes | `document_a4` item (`Config.Inventory.provider`) |
 | `ox_target` **or** `qb-target` | Recommended | Courthouse / archive / projector eye (F5 panel key works without it). `Config.Target.provider = 'auto'` |
 | Framework (ESX / QB / Qbox) | Yes | Auto bridge |
-| [`nevera_printeri`](https://nevera-hard-rp.com/Nevera-Docs/#/docs/printeri/overview) | Optional, **sold separately** | Physical printers / extra print UI. Court already opens `document_a4` in its own viewer. |
+| [`nevera_printeri`](https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/printeri) | Optional, **sold separately** (needs `ox_inventory` + `ox_target`) | Physical printers / extra print UI. Court already opens `document_a4` in its own viewer. |
 
 Court **does not** require `nevera_printeri` to view printed forms.
 
@@ -45,6 +45,13 @@ ensure Nevera_Court
 
 Recommended folder name: **`Nevera_Court`** (must match item export).
 
+**Database editor permission** (laptop → Tools → Database). Nobody has it by default, not even Supreme Court. Grant it only to people you fully trust:
+
+```cfg
+add_ace qbcore.god nevera.court.db allow                    # e.g. only server owners
+# add_ace identifier.license:xxxxxxxx nevera.court.db allow # or one person
+```
+
 ---
 
 ## SQL
@@ -54,7 +61,7 @@ Recommended folder name: **`Nevera_Court`** (must match item export).
 Run **only** these, in order:
 
 ```
-sql/01 → sql/02 → sql/03 → sql/04 → sql/07 → sql/08 → sql/09 → sql/10
+sql/01 → sql/02 → sql/03 → sql/04 → sql/07 → sql/08 → sql/09 → sql/10 → sql/11
 ```
 
 | File | What |
@@ -67,6 +74,7 @@ sql/01 → sql/02 → sql/03 → sql/04 → sql/07 → sql/08 → sql/09 → sql
 | `08_court_extras.sql` | Court services (licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) |
 | `09_court_procedure.sql` | Court procedure (plea columns, probation / community service, restraining orders, pre-trial detention) |
 | `10_house_arrest.sql` | House arrest + ankle monitor |
+| `11_db_editor.sql` | Database editor history (`doj_db_history`) |
 
 **Do not** run `05_*` / `06_*` on a new database — those columns are already in `01`.
 
