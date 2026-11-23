@@ -1,3 +1,4 @@
+
 -- ============================================================
 --  nevera_court / config_fines.lua   (escrow-open — edit freely)
 --  FINE CALCULATOR (panel → Fines tab)
