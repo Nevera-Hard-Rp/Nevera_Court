@@ -30,6 +30,7 @@ Config.Edition = 'full'   -- 'full' | 'lite'
 Config.Modules = {
     -- core extras
     bail            = nil,
+    db_editor       = nil,  -- full only: laptop Database editor (Lite stays off)
     hearings        = nil,
     jury            = nil,
     judicial_police = nil,
@@ -638,6 +639,39 @@ Config.LawEditor = {
     command = 'courtlaws',                -- direct command ('' = only via /court menu)
 }
 
+-- ⚠ DATABASE EDITOR (laptop → Tools → Database) — direct access to court tables.
+-- NOBODY has it by default — not even Supreme Court. YOU decide who gets it, in server.cfg:
+--     add_ace qbcore.god nevera.court.db allow                 -- e.g. only server owners
+--     add_ace identifier.license:xxxxxxxx nevera.court.db allow -- or one specific person
+-- Give it only to people you fully trust. Every change goes to doj_db_history (Restore) and Discord.
+-- The client sends a table, a column and a value — never SQL. The server allows a change only when
+-- the table and the column are listed below. Anything not listed is hidden
+-- (doj_counters, doj_audit_log, doj_archive, doj_laws → use Law Code → Edit).
+Config.DbEditor = {
+    enabled  = true,
+    ace      = 'nevera.court.db',
+    pageSize = 50,
+    locked   = { 'id', 'case_number', 'citizenid', 'created_at', 'filed_at' },
+    tables   = {
+        doj_hearings       = { mode = 'edit', edit = { 'hearing_type', 'status', 'hearing_date', 'location', 'notes' }, delete = true },
+        doj_bail           = { mode = 'edit', edit = { 'status', 'amount', 'bail_type', 'strike_count', 'bail_ban_until', 'forfeiture_reason' } },
+        doj_warrants       = { mode = 'edit', edit = { 'status', 'expires_at', 'denial_reason', 'target_description', 'search_location' } },
+        doj_roles          = { mode = 'edit', edit = { 'role', 'office', 'bar_number', 'active' }, insert = true, delete = true },
+        doj_jury           = { mode = 'edit', edit = { 'status', 'case_number' }, delete = true },
+        doj_pending_fines  = { mode = 'edit', edit = { 'amount', 'reason', 'paid' } },
+        doj_licenses       = { mode = 'edit', edit = { 'status', 'decision_note' } },
+        doj_appointments   = { mode = 'edit', edit = { 'status', 'lawyer_note', 'requested_time' } },
+        doj_law_categories = { mode = 'edit', edit = { 'title', 'title_hr', 'title_de', 'title_fr', 'title_es', 'color', 'icon' } },
+        doj_house_arrest   = { mode = 'edit', edit = { 'radius', 'ends_at', 'conditions' } },
+        doj_cases          = { mode = 'edit', edit = { 'status', 'facts', 'prosecutor_citizenid', 'defense_attorney_citizenid', 'judge_citizenid' } },
+        doj_forms = { mode = 'read' }, doj_commitment_orders = { mode = 'read' }, doj_charges = { mode = 'read' },
+        doj_appeals = { mode = 'read' }, doj_expungements = { mode = 'read' }, doj_plea_deals = { mode = 'read' },
+        doj_case_evidence = { mode = 'read' }, doj_court_sessions = { mode = 'read' }, doj_court_minutes = { mode = 'read' },
+        doj_alt_sentences = { mode = 'read' }, doj_restraining_orders = { mode = 'read' }, doj_detention = { mode = 'read' },
+        doj_judicial_requests = { mode = 'read' }, doj_exam_attempts = { mode = 'read' }, doj_treasury = { mode = 'read' },
+    },
+}
+
 -- ============================================================
 --  COURT PROCEDURE (Install/sql/09_court_procedure.sql)
 -- ============================================================
@@ -729,6 +763,19 @@ Config.HouseArrest = {
     consumeCutter    = true,
     cutSeconds       = 8,
     homeBlip         = { sprite = 40, colour = 2, label = 'House arrest' },
+    -- Circle on the live map when a sentence has no radius of its own.
+    radius           = 100,
+    -- Live map in the laptop. Empty = built-in radar (no map images ship with this resource).
+    -- Same CRS as tk_mdt: {z}/{x}/{y}.png, no TMS flip. Zoom 2–5.
+    -- Optional: URL of map tiles you are allowed to use, e.g. from an MDT you own:
+    --   'https://cfx-nui-tk_mdt/web/build/tiles/{z}/{x}/{y}.png'
+    -- No map images ship with this resource.
+    mapTiles         = '',
+    map              = {
+        minZoom = 2,
+        maxZoom = 5,
+        ax = 0.02072, bx = 117.3, ay = -0.0205, by = 172.8,
+    },
 }
 
 -- Contempt of court: judge punishes a person in the courtroom on the spot
