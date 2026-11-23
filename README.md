@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="https://i.imgur.com/4ZY7wOO.png" alt="Nevera Court — FiveM DOJ / Court System" width="100%">
+<img src="https://i.imgur.com/7WqUGwg.png" alt="Nevera Court — FiveM DOJ / Court System" width="100%">
 
 # Nevera Court
 
@@ -73,6 +73,16 @@
 - **Contempt of court** — judge picks a nearby player: on-the-spot fine and/or prison minutes, written to the minutes
 - **House arrest + ankle monitor** — judge sets the home address + radius; visible bracelet on the leg, optional live police tracking, alert when the person leaves the zone, auto-revoke after X violations, bolt cutter to cut it (police alerted + warrant)
 
+**Court laptop (new UI)**
+- F5 opens a **court laptop**: a desktop with folders for every module (Cases, Forms, Requests, Judicial Police, Warrants, Bail / Bond, Hearings, Jury, Fines, Law Code) and tools (House arrest, Database)
+- Every module opens in its own **window** — back button + **ESC** (closes a dialog → goes back → closes the laptop), minimize to the taskbar, size slider
+- **Taskbar:** open windows, **Help**, **Gavel** (judges), your court role and the clock · **Today in court** card on the desktop
+- **Help** window: one card per command — click it to open the right window; you only see what your role allows
+- Commands still work and open the laptop straight on their window (`/courtlaws`, `/bracelets`, `/courtboard`, …)
+- **Penal code editor inside the laptop** (Law Code → Edit) — no more side menus
+- **House arrest window:** list + **live map** with the home zone, the person's position and status colour (in zone / grace / breach / offline); built-in radar when no map tiles are set
+- **Database editor** (Tools → Database) — whitelisted court tables only, locked key columns, history + Restore; **nobody has it until you grant the ACE `nevera.court.db`**
+
 **Editions & customization**
 - `Config.Edition = 'full' | 'lite'` — Lite keeps only the core court; every module can be switched on/off in `Config.Modules`
 - Escrow-open: `config.lua`, `config_fines.lua`, `locales/`, `bridge/`, `web/`, `Install/` and **`editable/`** hooks to plug in your own scripts
@@ -103,7 +113,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | **Inventory** | ox · qs · qb · ps · codem · tgiann · origen · ak47 (`auto`) |
 | **Phone** | LB · Quasar · YSeries · 17mov · GKS · NPWD · qb-phone (`auto`) |
 | **MDT** | Bridge for tk_mdt (full) · Advanced (manual) · ps-mdt (patch) — see `Install/MDT.md` |
-| **UI** | React NUI + ox_lib menus / alerts / targets |
+| **UI** | Court laptop — React NUI desktop with windows, taskbar and Help (+ ox_lib alerts / targets) |
 | **Languages** | `en` · `hr` · `de` · `fr` · `es` — **full UI + A4 forms + NKZ titles** (`Config.Locale`) |
 
 > **Install pack:** `Install/README.md`
@@ -194,6 +204,24 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - **Contempt of court** — on-the-spot fine and/or prison minutes for a nearby player
 - **House arrest + ankle monitor** — home radius (default 100 m), bracelet prop on the leg, live police tracking blips (config switch), warning → police alert with blip → optional auto-revoke + warrant `HA-YYYY-####`, cutting the bracelet with a cutter item, automatic end after the real days, `/bracelets` list for police / judges
 
+### Court laptop (UI)
+- **F5** opens a laptop-style DOJ panel: desktop with module folders, windows, taskbar, size slider
+- Folders you see depend on your court role — the **server** sends the list
+- **Back / ESC** in every window; **Help** on the taskbar lists every command as a clickable card
+- Commands open the laptop directly on their window — players don't have to memorize anything
+
+### House arrest — live map
+- List of everyone on house arrest + map with the home zone, position, distance and status colour
+- `Config.HouseArrest.mapTiles` — optional URL of GTA map tiles **you are allowed to use** (e.g. from an MDT you own). **No map images ship with this resource**; empty = built-in radar
+- **Track on map (GPS)** puts a real blip + waypoint in the game; End / Revoke ask for confirmation
+
+### Database editor (server owners only)
+- Laptop → Tools → **Database**: browse and edit court tables **without SQL**
+- Only tables / columns listed in `Config.DbEditor.tables` — `edit` or `read`; everything else is hidden
+- `id`, case numbers, citizen ids and creation dates are always locked
+- Every change is saved to `doj_db_history` → **Restore** in one click, and logged to Discord
+- ⚠ **Nobody has access by default — not even Supreme Court.** You grant it with an ACE (see [Roles & permissions](#roles--permissions))
+
 ### Editions & hooks
 - `Config.Edition = 'full' | 'lite'` + per-module switches in `Config.Modules`
 - `editable/sv_hooks.lua` · `editable/cl_hooks.lua` (escrow-open) — `OnVerdict`, `OnMoneyIn`, `OnCourtEvent`, `OnCourtCall`, `OnGavel`
@@ -225,7 +253,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | Framework (**ESX** / QB / Qbox) or `standalone` | **Yes** |
 | [ox_inventory](https://github.com/overextended/ox_inventory) **or** [qb-inventory](https://github.com/qbcore-framework/qb-inventory) | **Yes** for print / archive `document_a4` (`Config.Inventory.provider = 'auto'`; force `'qb-inventory'` on mixed servers) |
 | [ox_target](https://github.com/overextended/ox_target) **or** [qb-target](https://github.com/qbcore-framework/qb-target) | Recommended (courthouse / archive / projector eye). F5 panel works without either. `Config.Target.provider = 'auto'` |
-| [nevera_printeri](https://nevera-hard-rp.com/Nevera-Docs/#/docs/printeri/overview) | **Optional, sold separately** — physical printers. Court already views filled forms on Use. |
+| [nevera_printeri](https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/printeri) | **Optional, sold separately** (needs `ox_inventory` + `ox_target`) — physical printers. Court already views filled forms on Use. |
 | MDT (ps-mdt / tk_mdt / Advanced) | Optional — `Install/MDT.md` |
 | Phone / prison | Optional |
 | Dispatch (ps-dispatch / cd_dispatch / qs-dispatch) | Optional — escalates the Judicial Police command alarm (`Config.JudicialPolice.notify.dispatch`) |
@@ -254,10 +282,10 @@ Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `Get
 Same schema for every framework — **fresh install**, run in order:
 
 ```text
-Install/sql/01 → 02 → 03 → 04 → 07 → 08 → 09 → 10
+Install/sql/01 → 02 → 03 → 04 → 07 → 08 → 09 → 10 → 11
 ```
 
-Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police) and `08` (court services: licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) and `09` (court procedure: plea, probation / community service, restraining orders, detention) and `10` (house arrest) are safe on both fresh and existing databases. See `Install/README.md`.
+Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police) and `08` (court services: licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) and `09` (court procedure: plea, probation / community service, restraining orders, detention) and `10` (house arrest) and `11` (database editor history) are safe on both fresh and existing databases. See `Install/README.md`.
 
 **Verify:**
 
@@ -310,7 +338,7 @@ ensure nevera_printeri    # optional — only if purchased separately
 ensure Nevera_Court       # exact folder name
 ```
 
-If you own `nevera_printeri`, also run its own SQL once — see its install guide.
+If you own `nevera_printeri`, also run its own SQL once — see `nevera_printeri/install/README.md`.
 
 Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `Install/server_cfg_discord.cfg`.
 
@@ -555,7 +583,9 @@ Config.Modules = {
 | `Config.AltSentences` | community-service work points + scenario |
 | `Config.RestrainingOrders` · `Config.Detention` · `Config.Contempt` | radius / grace, max hours + extensions, max fine / minutes |
 | `Config.HouseArrest` | radius, grace, auto-revoke, `liveTracking` on/off, police jobs, bracelet prop + offset, `cutterItem` |
+| `Config.HouseArrest.mapTiles` · `map` | optional live-map tile URL (empty = radar) + zoom |
 | `Config.LawEditor` | roles / ACE for the in-game penal code editor (`/courtlaws`) |
+| `Config.DbEditor` | laptop Database editor: ACE, allowed tables (`edit` / `read`), editable columns, locked columns |
 
 ### Hooks (`editable/`)
 
@@ -712,6 +742,15 @@ Assignable DB roles (new install): `supreme_court`, `judge`, `prosecutor`, `defe
 
 Optional ACE / group mappings: `Config.Permissions`.
 
+**Database editor (⚠ read this):** nobody has it by default — not even Supreme Court. **You decide who gets it**, in `server.cfg` (or your permissions file):
+
+```cfg
+add_ace qbcore.god nevera.court.db allow                    # e.g. only server owners
+# add_ace identifier.license:xxxxxxxx nevera.court.db allow # or one specific person
+```
+
+Give it only to people you fully trust. Every change is logged to Discord and can be restored from History.
+
 Archive access also requires the correct password for that role in `Config.Archive.Passwords`.
 
 Judicial Police access is **job-based**, not a DOJ role: `Config.JudicialPolice.commandJobs` (+ `commandMinGrade`) can acknowledge and assign requests, `assignableJobs` can be assigned and complete them, and `judge` / `supreme_court` / `clerk` can create requests.
@@ -724,7 +763,8 @@ Judicial Police access is **job-based**, not a DOJ role: `Config.JudicialPolice.
 
 | Method | Description |
 |--------|-------------|
-| Keybind | `Config.UI.openKey` (default **F5**) |
+| Keybind | `Config.UI.openKey` (default **F5**) — opens the court laptop desktop |
+| Commands | open the laptop directly on their window (see below) |
 | Courthouse | `ox_target` or `qb-target` on `Config.Courthouse` zones |
 | Menus | ox_lib context / radial (where enabled) |
 
@@ -745,20 +785,21 @@ Arrest / Affidavit
 
 ### Commands
 
-| Command / bind | Description |
-|----------------|-------------|
-| **F5** (default) | Open / close DOJ panel |
-| `/doj_help` | List DOJ commands |
-| `/doj_jury` | Register for jury pool |
-| `/doj_jury_odjava` | Unregister from jury pool |
-| `/doj_commitment` | Commitment orders (custody / DOC / judges) |
-| `/refreshnkz` | Reload penal code from DB (console or admin) |
-| `/courtlaws` | In-game penal code editor (Supreme Court / ACE admin) |
-| `/court` | Court services + procedure menu (also *My sentences* for citizens) |
-| `/courtboard` | Public court board (hearings + verdicts) |
-| `/bracelets` | Ankle monitors: everyone on house arrest, live status + GPS (police / judges) |
-| `/gavel` | Strike the gavel (judge) |
-| `/jpdezurni` | Toggle Judicial Police standing duty (on/off) |
+Everything is also reachable by clicking in the laptop — commands are shortcuts.
+
+| Command / bind | Description | In the laptop |
+|----------------|-------------|---------------|
+| **F5** (default) | Open / close the court laptop | — |
+| `/doj_help` | List DOJ commands | Taskbar → **Help** |
+| `/doj_jury` · `/doj_jury_odjava` | Register / unregister for the jury pool | **Jury** → Register / Unregister |
+| `/doj_commitment` | Commitment orders (custody / DOC / judges) | **Fines** → Commitment orders |
+| `/refreshnkz` | Reload penal code from DB (console or admin) | **Law Code** → Reload from database |
+| `/courtlaws` | Penal code editor (Supreme Court / ACE admin) | **Law Code** → Edit |
+| `/court` | Court services + procedure (*My sentences* for citizens) | **Requests** · **Cases** → case tools |
+| `/courtboard` | Public court board (hearings + verdicts) | **Hearings** → Public board |
+| `/bracelets` | House arrest: list, live map, GPS (police / judges) | Tools → **House arrest** |
+| `/gavel` | Strike the gavel (judge) | Taskbar → **Gavel** |
+| `/jpdezurni` | Judicial Police standing duty on / off | **Judicial Police** |
 
 ### Print flow
 
@@ -922,6 +963,8 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | Discord screenshots fail | `nevera_court_imgbb_key` + `nevera_court_wh_*` |
 | migrate i18n “duplicate column” | Fresh install: skip `05_*`. Existing DB: use migrate scripts once. |
 | Print rejected: “requires a Discord transcript” | Expected — `Config.Forms.requireTranscript = true` by default. Configure `nevera_court_imgbb_key` + `nevera_court_wh_*`, or set `requireTranscript = false` / add the type to `transcriptExempt`. |
+| Database folder not visible | Expected until you grant the ACE: `add_ace <group> nevera.court.db allow` in server.cfg, restart. Also run `11_db_editor.sql`. |
+| House arrest map is grey / only a grid | `Config.HouseArrest.mapTiles` is empty (built-in radar) or the URL is wrong / that resource isn't started |
 | Judicial Police alarm reaches no one | Check `Config.JudicialPolice.commandJobs` + `commandMinGrade` match your real job names/grades, and that command staff are online. |
 
 ---
