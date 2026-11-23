@@ -11,7 +11,7 @@ UI language follows `Config.Locale` (`en` / `hr` / `de` / `fr` / `es`). **Labels
 
 - **F5** opens the court laptop: **Today in court** on top, a folder for every module you are allowed to use, and **Tools** (House arrest, Database for server owners).
 - Click a folder → it opens in a **window**. **← Back** or **ESC** goes back (ESC first closes an open dialog; on the desktop ESC closes the laptop). **–** minimizes the window to the taskbar.
-- **Taskbar:** open windows · **Help** · **Gavel** (judges) · your court role · clock. **Size** slider in the top bar.
+- **Taskbar:** open windows · **Help** · **Gavel** (judges) · 🚨 **Judicial Police N** (blinks while a request waits — one click opens it) · your court role · clock. **Size** slider in the top bar.
 - **Help** shows every command as a card — click a card to open the right window. You never *have* to type a command.
 - Commands still work as shortcuts and open the laptop on their window: `/courtlaws` → Law Code editor, `/bracelets` → House arrest, `/courtboard` → Hearings → Public board, `/doj_jury` → Jury, `/doj_commitment` → Fines → Commitment orders.
 
@@ -198,7 +198,7 @@ Bail hearing ≠ jury.
 | Action | How |
 |--------|-----|
 | Register | `/doj_jury` or courthouse **jury registration** target |
-| Unregister | `/doj_jury_odjava` (blocked if currently `selected` on a case) |
+| Unregister | `/doj_jury_leave` (blocked if currently `selected` on a case) |
 
 After register: status `available`. Audit may show `JURY_REGISTERED`.
 
@@ -252,6 +252,29 @@ Set display language with `Config.Locale` + i18n seed (`Install/sql/03_…`).
 
 First Supreme Court user: `Install/sql/04_first_supreme_court.sql` (correct framework identifier).
 
+### 4.11 Judicial Police
+
+**Purpose:** the court asks the police for help — guarding the court, prisoner transports, arrests.
+
+**Judge / clerk / Supreme Court — send a request**
+
+1. Judicial Police → **+ New request**
+2. **Type:** Court protection · Transport to court · Transport to jail · Arrest · House-arrest violation
+3. **Time:** court protection and transport to court must be at least **2 h ahead** (the form shows the earliest time). Arrest, house-arrest violation and transport to jail go out **immediately**.
+4. **Location:** a courthouse / prison from the list or **My current location**
+5. **Units:** the right police units are ticked for you — change them if needed. **High risk** adds units like SWAT.
+6. **Submit** → you are notified when it is claimed, assigned and completed.
+
+**Police (command grade, on duty)**
+
+1. Alarm + sound repeats until someone claims it. Open with **`/jpduty`** or the 🚨 badge on the laptop taskbar.
+2. Click the request → **Claim** → the alarm stops for everyone → **Assign** officers.
+3. The officer gets a **GPS route** on the minimap → **Complete** (optional note).
+
+Nobody claimed it? After a few minutes the request also goes to the backup units. Old unclaimed requests expire.
+
+**Metal detectors** at the courthouse (if your server enabled them) beep when someone walks through with a weapon. On-duty officers pass and get a notification.
+
 ---
 
 ## 5. Outside the sidebar (still part of the system)
@@ -269,7 +292,7 @@ Change default passwords before going live.
 
 - Inventory item **`document_a4`** → **Use**
 - Needs `consume = 0` and export matching folder name (`Nevera_Court.viewDocument`)
-- Needs **`nevera_printeri`** started
+- Opens in the Court viewer. If your server also runs **`nevera_printeri`** (sold separately), it opens in the printer UI instead
 
 ### Commitment / prison
 
@@ -285,9 +308,14 @@ Change default passwords before going live.
 | **F5** (default) | Everyone with access | Open / close DOJ panel |
 | `/doj_help` | Everyone | Short command list |
 | `/doj_jury` | Citizens / players | Register for jury pool |
-| `/doj_jury_odjava` | Players in pool | Leave pool (if not selected) |
+| `/doj_jury_leave` | Players in pool | Leave pool (if not selected) |
 | `/doj_commitment` | Custody / DOC / judges | Commitment orders after prison sentence |
-| `/refreshnkz` | Console / admin | Reload penal code from database |
+| `/refreshlaws` | Console / admin | Reload penal code from database |
+| `/jpduty` | Police units | Open Judicial Police as police + duty on / off |
+| `/courtlaws` | Supreme Court / admin | Penal code editor |
+| `/courtboard` | Everyone | Public court board |
+| `/bracelets` | Police / judges | House arrest list + live map |
+| `/gavel` | Judges | Strike the gavel |
 
 Keybind for commitment can be set via FiveM keybind settings (`doj_commitment`).
 
