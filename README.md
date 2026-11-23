@@ -12,8 +12,13 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-informational?style=for-the-badge)](#changelog)
 [![Locale](https://img.shields.io/badge/locale-EN%20%7C%20HR%20%7C%20DE%20%7C%20FR%20%7C%20ES-purple?style=for-the-badge)](#localization)
 [![License](https://img.shields.io/badge/license-Proprietary-red?style=for-the-badge)](#license--support)
+[![Escrow](https://img.shields.io/badge/Cfx.re-Asset%20Escrow-black?style=for-the-badge)](#escrow--editable-files)
 
 **Cases · Forms · Warrants · Bail · Hearings · Jury · Fines · Penal Code · House Arrest · Archive · MDT · Discord**
+
+🎥 **Video — coming soon**
+
+🔒 **Protected with Cfx.re Asset Escrow** — config, locales, bridges, hooks, NUI & forms stay open
 
 [Overview](#overview) ·
 [Features](#features) ·
@@ -25,7 +30,7 @@
 [Roles](#roles--permissions) ·
 [In-game usage](#in-game-usage) ·
 [Legal forms](#legal-forms) ·
-[Development](#development--rebuild-nui) ·
+[Editing the UI](#editing-the-ui) ·
 [Exports](#exports--integration) ·
 [Troubleshooting](#troubleshooting) ·
 [Support](#support--community) ·
@@ -44,13 +49,21 @@
 - Hard-RP verdict flow: guilty verdict → commitment order → custody / DOC executes at prison intake
 - Official court seal, Discord logs + court transcripts (optional, `Config.Forms.requireTranscript`)
 - Framework bridges: ESX / QBCore / Qbox / standalone + multi inventory / phone / MDT / prison
-- `ox_target` or `qb-target`; courtroom projector (host whitelist); gavel with real sound heard by everyone near the judge (`/gavel`)
+- `ox_target` or `qb-target`; courtroom wall screen (no TV prop; YouTube, images and links); gavel with real sound heard by everyone near the judge (`/gavel`)
 - One money symbol everywhere (`Config.Currency`) and your own server name (`Config.Branding`) in UI, seal, logs and all A4 forms
 - **In-game penal code editor** (prices, prison, texts in 5 languages, new articles) + fine calculator table in `config_fines.lua`
 
 **Judicial Police**
-- 24/7 court-security duty (`/jpdezurni` or courthouse-entrance target), prisoner transport requests, optional court protection for high-risk trials
-- Command-chain alarm (`Config.JudicialPolice.commandJobs` + `commandMinGrade`) repeating until acknowledged, then officer assignment
+- Request types: **court protection**, **transport to court**, **transport to jail** ("right after the verdict"), **arrest** and **house-arrest violation**
+- **Your own police units** (`Config.JudicialPolice.units`): job name, label, command grade, *high risk only* (e.g. SWAT) — the judge ticks which units get the call
+- **Routing per request type**: `first` units are alarmed at once, `fallback` units after `fallbackAfterSec` if nobody claims (or at once if nobody from `first` is on duty)
+- **Scheduling rules**: court protection / transport to court at least **2 h ahead** (configurable); arrest, house-arrest violation and transport to jail are immediate
+- Repeating alarm (sound + banner + SMS + dispatch) only for **on-duty** command grades until someone **claims** it; going on duty later still delivers pending alarms
+- **GPS route** on the minimap for the officer who claims / is assigned (court ↔ prison for transports, live position for arrests); removed on complete / cancel
+- Location from config (`locations`) or **"My current location"** of the judge; requests not claimed in `expireAfterHours` expire
+- **Taskbar badge** 🚨 *Judicial Police N* on the laptop desktop — blinks while something is pending, one click opens the right request
+- **Walk-through metal detectors** at the courthouse (`gate`) — beep for anyone carrying a weapon, on-duty officers pass and get notified
+- `/jpduty` (or the courthouse-entrance target) toggles duty — the same framework duty as the job
 
 **Court services** (ox_lib menus: `/court`, DOJ menu → *Court services*, case menu → *Case tools*, courthouse eye)
 - **Bar exam & licences** — multiple-choice exam, fee, cooldown, judge approval, automatic DOJ role + bar number, revoke
@@ -59,9 +72,9 @@
 - **Appeals** to the Supreme Court — granting reopens the case, clears the verdict and cancels pending commitment orders / unpaid fines
 - **Expungement** — clear an old conviction; `exports['Nevera_Court']:GetCriminalRecord(citizenid)` ignores expunged cases
 - **Plea deals** — prosecutor offers → defense accepts → judge approves = guilty verdict through the normal pipeline
-- **Evidence per case** — images / video / links / notes, shown on the courtroom projector in one click
+- **Evidence per case** — images / video / links / notes, one click onto the courtroom wall screen (no TV in the room)
 - **Courtroom session** — "All rise", "Be seated", "Order in the court", recess; minutes (manual + automatic + optional chat capture) sent to Discord
-- **Public court board** — upcoming hearings + recent public verdicts (eye point + `/courtboard`)
+- **Public court board** — upcoming hearings + recent public verdicts. An eye point on a notice board + `/courtboard`. It does not spawn a TV.
 
 **Court procedure** (each module has its own `Config.Modules` toggle)
 - **Arraignment / plea** — guilty · not guilty · no contest; case moves to pre-trial or awaiting verdict
@@ -74,12 +87,13 @@
 - **House arrest + ankle monitor** — judge sets the home address + radius; visible bracelet on the leg, optional live police tracking, alert when the person leaves the zone, auto-revoke after X violations, bolt cutter to cut it (police alerted + warrant)
 
 **Court laptop (new UI)**
-- F5 opens a **court laptop**: a desktop with folders for every module (Cases, Forms, Requests, Judicial Police, Warrants, Bail / Bond, Hearings, Jury, Fines, Law Code) and tools (House arrest, Database)
+- F5 opens a **court laptop**: a desktop with folders for every module (Cases, Forms, Requests, Judicial Police, Warrants, Bail / Bond, Hearings, Jury, Fines, Law Code) and tools (House arrest, Database, Admin — roles + audit log)
+- Own dark dropdowns, date fields in `dd.mm.yyyy HH:mm` (per language), no game keys while typing (chat `T` etc. stay closed)
 - Every module opens in its own **window** — back button + **ESC** (closes a dialog → goes back → closes the laptop), minimize to the taskbar, size slider
 - **Taskbar:** open windows, **Help**, **Gavel** (judges), your court role and the clock · **Today in court** card on the desktop
 - **Help** window: one card per command — click it to open the right window; you only see what your role allows
 - Commands still work and open the laptop straight on their window (`/courtlaws`, `/bracelets`, `/courtboard`, …)
-- **Penal code editor inside the laptop** (Law Code → Edit) — no more side menus
+- **Penal code editor inside the laptop** (Law Code → Edit) — prices, prison time, texts in 5 languages, **activate / deactivate** articles (inactive ones stay in old cases but can't be charged)
 - **House arrest window:** list + **live map** with the home zone, the person's position and status colour (in zone / grace / breach / offline); built-in radar when no map tiles are set
 - **Database editor** (Tools → Database) — whitelisted court tables only, locked key columns, history + Restore; **nobody has it until you grant the ACE `nevera.court.db`**
 
@@ -104,7 +118,7 @@ Docs: [Nevera Docs — Court](https://nevera-hard-rp.com/Nevera-Docs/#/docs/suds
 - Calculate fines, browse the penal code (NKZ), and log actions to Discord  
 - Dispatch Judicial Police for prisoner transport or optional court protection, with a command-chain alarm that repeats until claimed  
 
-Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, bridges, SQL, and the full React NUI source while core gameplay logic can be encrypted.
+Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, bridges, SQL, and the built NUI (`web/dist` — HTML / JS / CSS + all A4 forms) while core gameplay logic is encrypted.
 
 | | |
 |---|---|
@@ -131,13 +145,12 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 
 ### Legal forms (37 A4 HTML templates × 5 languages)
 - Fillable US-style court forms in-game (affidavits, complaints, warrants, motions, orders, subpoenas, civil filings, …)
-- **Full HTML per language:** `web/public/forms_{en,hr,de,fr,es}/` → sync to `web/dist/forms_*/` (NUI reads **dist** only)
+- **Full HTML per language:** `web/dist/forms_{en,hr,de,fr,es}/` — edit the HTML directly, no build needed
 - Role-based form access
 - Legal misuse warning before print
 - Print → `document_a4` inventory item (+ **Discord court transcripts** via imgbb webhook)
 - Judge approve / deny / sign workflow
 - Optional chrome i18n: `web/dist/i18n/forms_{en,hr,de,fr,es}.json` (`data-i18n`)
-- Legacy folder `web/public/forms/` is **obsolete** — use `forms_en` instead
 
 ### Warrants
 - Arrest (AW) & search (SW): request → judge approve / deny → police execute
@@ -170,13 +183,20 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Custody / DOC executes the commitment order near the inmate → prison provider handoff
 - Bridges: `qb-prison` · `rcore_prison` · `pickle_prisons` · `custom` · `none`
 
-### Judicial Police (court security + prisoner transport)
-- Standing 24/7 duty toggle (`/jpdezurni` or the courthouse-entrance target) — court security is a continuous assignment, not requested per-trial
-- Court → Judicial Police requests: **prisoner transport** to a hearing (routine) and an **optional** judge-initiated **court protection** request for high-risk trials only
-- Command-chain alarm: only deputy chief / chief / duty officer (`Config.JudicialPolice.commandJobs` + `commandMinGrade`) get paged first, repeating sound + phone + Discord alert until one of them acknowledges — never blasted to every online officer
-- Command then assigns one or more online officers; court gets a confirmation of who claimed/was assigned; "Completed" is always a single click, with an optional note softly recommended only for prisoner transport
-- Separate from the existing arrest/search-warrant `dovedbeni nalog` flow (regular police) — that system is unchanged
-- New NUI tab + Discord channel (`nevera_court_log_judicial`) · fully localized (5 languages)
+### Judicial Police (court security, transports, arrests)
+- **Request types:** court protection · transport to court · transport to jail (*right after the verdict*) · arrest · house-arrest violation
+- **Units are yours:** list your own police jobs in `Config.JudicialPolice.units` (any job names — LSPD, BCSO, judicial police, SWAT, …). Each unit has a `commandMinGrade`; `highRiskOnly` units (SWAT) are only called when the judge ticks **High risk**
+- **Routing:** per request type `first` units are alarmed immediately; `fallback` units if nobody from `first` is on duty or nobody claims within `fallbackAfterSec`. The judge can change the ticks in the form
+- **Scheduling:** court protection and transport to court need a time at least `minHoursAhead` (default 2 h) in the future — the form shows the earliest allowed time and the server checks it again. Arrest, house-arrest violation and transport to jail are immediate. A case that already has a prison sentence shows **Send transport to jail** on the verdict.
+- **Alarm:** repeating sound + banner (+ phone SMS + dispatch) to on-duty command grades until one **claims** the request; it then stops for everyone. Going on duty later still delivers pending requests
+- **Claim → assign → complete:** command assigns one or more officers; the court is notified at every step. Optional completion note (recommended for transports)
+- **GPS:** the officer who claims / is assigned gets a blip + route on the minimap (prison → court → prison for transports; the person's live / last known position for arrests). Removed on complete or cancel
+- **Locations:** named places from `Config.JudicialPolice.locations` or **My current location** (the judge's position when sending)
+- **Taskbar badge:** 🚨 *Judicial Police N* appears on the laptop desktop while something is open — blinks when pending, one click opens the request
+- **Expiry:** pending / claimed requests older than `expireAfterHours` become *expired*
+- **Metal detectors** (`gate`): walk through an existing arch. A weapon rings it unless the player is **on duty** in an exempt job. Those officers pass quietly and get the alert. No prop is spawned. Coords stay in config only.
+- Duty: `/jpduty` or the courthouse-entrance target — uses the **framework duty** of the job (same as F6)
+- Separate from the regular arrest / search-warrant flow — that system is unchanged · Discord channel `nevera_court_log_judicial` · 5 languages
 
 ### Document archive
 - Password-protected stashes per role (`Config.Archive.Passwords`)
@@ -190,7 +210,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - **Appeals** to the Supreme Court — granting reopens the case and cancels pending commitment orders / unpaid fines
 - **Expungement** — clear an old conviction (ignored by `GetCriminalRecord`)
 - **Plea deals** — prosecutor offers → defense accepts → judge approves = guilty verdict
-- **Evidence per case** — images / video / links / notes, one click to the courtroom projector
+- **Evidence per case** — images / video / links / notes, one click onto the wall screen. No TV prop. YouTube plays in the screen itself.
 - **Courtroom session** — all rise / be seated / order / recess + minutes to Discord
 - **Public court board** — upcoming hearings + recent public verdicts (`/courtboard`)
 
@@ -209,11 +229,28 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Folders you see depend on your court role — the **server** sends the list
 - **Back / ESC** in every window; **Help** on the taskbar lists every command as a clickable card
 - Commands open the laptop directly on their window — players don't have to memorize anything
+- **Admin** folder (Supreme Court / ACE `nevera.sudstvo.admin`): DOJ roles + audit log
+- **Penal code editor** in the laptop: activate / deactivate articles, texts in 5 languages
+- **Taskbar badge** 🚨 *Judicial Police N* — blinks while a request is pending (`Config.UI.blink`)
+- Typing in the laptop never reaches the game (no chat on `T`, no weapon keys)
 
 ### House arrest — live map
 - List of everyone on house arrest + map with the home zone, position, distance and status colour
 - `Config.HouseArrest.mapTiles` — optional URL of GTA map tiles **you are allowed to use** (e.g. from an MDT you own). **No map images ship with this resource**; empty = built-in radar
 - **Track on map (GPS)** puts a real blip + waypoint in the game; End / Revoke ask for confirmation
+
+Ready-made tile sets (same layout, the default `map` values fit them):
+
+| Source | `mapTiles` |
+|---|---|
+| tk_mdt (if you own it) | `https://cfx-nui-tk_mdt/web/build/tiles/{z}/{x}/{y}.png` |
+| [meesvrh/GTAV-Map-Tiles](https://github.com/meesvrh/GTAV-Map-Tiles) — atlas (free) | `https://raw.githubusercontent.com/meesvrh/GTAV-Map-Tiles/main/tiles/atlas/{z}/{x}/{y}.jpg` |
+| same — satellite (free) | `https://raw.githubusercontent.com/meesvrh/GTAV-Map-Tiles/main/tiles/satellite/{z}/{x}/{y}.jpg` |
+| [VIRUXE/gtav-map-tiles](https://github.com/VIRUXE/gtav-map-tiles) — atlas · satellite · grid (free, WebP) | `https://viruxe.github.io/gtav-map-tiles/atlas/{z}/{x}-{y}.webp` (or `satelite` / `grid`) |
+
+Third-party images — use at your own discretion. On a busy server download the tiles into your own small resource (add them to its `files {}`) and use `https://cfx-nui-<your_resource>/tiles/{z}/{x}/{y}.jpg` instead of GitHub.
+
+Want tiles of **your own** map (custom MLOs / map edits)? [McLovinIt101/GTAV-MapTiler](https://github.com/McLovinIt101/GTAV-MapTiler) (MIT) turns your game's `minimap_#_#.png` files into tiles — then calibrate `map.ax/bx/ay/by` on 2–3 known places.
 
 ### Database editor (server owners only)
 - Laptop → Tools → **Database**: browse and edit court tables **without SQL**
@@ -253,6 +290,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 | Framework (**ESX** / QB / Qbox) or `standalone` | **Yes** |
 | [ox_inventory](https://github.com/overextended/ox_inventory) **or** [qb-inventory](https://github.com/qbcore-framework/qb-inventory) | **Yes** for print / archive `document_a4` (`Config.Inventory.provider = 'auto'`; force `'qb-inventory'` on mixed servers) |
 | [ox_target](https://github.com/overextended/ox_target) **or** [qb-target](https://github.com/qbcore-framework/qb-target) | Recommended (courthouse / archive / projector eye). F5 panel works without either. `Config.Target.provider = 'auto'` |
+| [generic_texture_renderer_gfx](https://forum.cfx.re/t/release-generic-dui-2d-3d-renderer/131208) | Only for the wall screen. Free tool by **thers**. **Not included** in this product. Without it the projector stays blank; the rest of the court still works. |
 | [nevera_printeri](https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/printeri) | **Optional, sold separately** (needs `ox_inventory` + `ox_target`) — physical printers. Court already views filled forms on Use. |
 | MDT (ps-mdt / tk_mdt / Advanced) | Optional — `Install/MDT.md` |
 | Phone / prison | Optional |
@@ -282,10 +320,10 @@ Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `Get
 Same schema for every framework — **fresh install**, run in order:
 
 ```text
-Install/sql/01 → 02 → 03 → 04 → 07 → 08 → 09 → 10 → 11
+Install/sql/01 → 02 → 03 → 04 → 07 → 08 → 09 → 10 → 11 → 12 → 13 → 14
 ```
 
-Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police) and `08` (court services: licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) and `09` (court procedure: plea, probation / community service, restraining orders, detention) and `10` (house arrest) and `11` (database editor history) are safe on both fresh and existing databases. See `Install/README.md`.
+Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police) and `08` (court services: licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) and `09` (court procedure: plea, probation / community service, restraining orders, detention) and `10` (house arrest) and `11` (database editor history) and `12`–`14` (Judicial Police units / routing, GPS location, expiry) are safe on both fresh and existing databases. **Updating from an older Court?** Run `12` → `13` → `14` once — without them new request types and routes fail to save. See `Install/README.md`.
 
 **Verify:**
 
@@ -335,6 +373,7 @@ ensure ox_inventory
 ensure [your-framework]   # es_extended / qb-core / qbx_core
 
 ensure nevera_printeri    # optional — only if purchased separately
+ensure generic_texture_renderer_gfx   # free, only for the wall screen — not included, see below
 ensure Nevera_Court       # exact folder name
 ```
 
@@ -351,7 +390,9 @@ Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `I
 - [ ] `nevera_printeri` only if you bought it (optional)
 - [ ] Print → inventory → **Use** → filled document (Court viewer)
 - [ ] Courthouse coords / archive passwords / webhooks (optional)
-- [ ] Judicial Police: `commandJobs` / `commandMinGrade` / `assignableJobs` / `dutyZone.coords` match your server
+- [ ] Judicial Police: `units` = **your** police job names + grades, `routing`, `locations` (court + prison coords), `dutyZone.coords`
+- [ ] Metal detectors (optional): `gate.enabled = true` + one coord per arch in `gate.gates`
+- [ ] Wall screen (optional): `generic_texture_renderer_gfx` started **above** Court, then `Config.Courtroom.projector` coords + rot
 ---
 
 ## Configuration
@@ -495,20 +536,90 @@ Config.UI = {
 
 ### Judicial Police
 
+> ⚠ **Set your own police job names.** `job` must match the job name in your framework exactly (QBCore `shared/jobs.lua`, Qbox `qbx_core/shared/jobs.lua`, ESX `jobs` table). Upper / lower case matters. If no unit matches, nobody gets the alarm.
+
 ```lua
 Config.JudicialPolice = {
-    enabled = true,
-    commandJobs    = { 'police', 'sheriff', 'bcso', 'sasp', 'lspd', 'judicial_police' }, -- who can acknowledge/assign
-    commandMinGrade = 4,          -- minimum job grade to count as "command"
-    assignableJobs = { 'police', 'sheriff', 'bcso', 'sasp', 'lspd', 'correctional', 'doc', 'judicial_police' },
-    alarmIntervalMs  = 15000,     -- how often the command alarm repeats
-    dutyToggleCommand = 'jpdezurni',
-    dutyZone = { enabled = true, coords = vector3(0.0, 0.0, 0.0) }, -- ← set to your courthouse entrance
-    noteRecommended = { prisoner_transport = true, court_protection = false },
+    units = {
+        { job = 'police',  label = 'LSPD', commandMinGrade = 3 },
+        { job = 'sheriff', label = 'BCSO', commandMinGrade = 3 },
+        -- { job = 'judicial', label = 'Judicial Police', commandMinGrade = 3 },
+        -- { job = 'swat',     label = 'SWAT', commandMinGrade = 3, highRiskOnly = true },
+    },
+    routing = {
+        court_protection       = { first = { 'police' }, fallback = { 'sheriff' }, fallbackAfterSec = 120 },
+        transport_to_court     = { first = { 'police' }, fallback = { 'sheriff' }, fallbackAfterSec = 120 },
+        transport_to_jail      = { first = { 'police' }, fallback = { 'sheriff' }, fallbackAfterSec = 120 },
+        arrest                 = { first = { 'police', 'sheriff' } },
+        house_arrest_violation = { first = { 'police', 'sheriff' } },
+    },
+    onlyOnDuty = true,             -- only on-duty players get the alarm
+    alarmIntervalMs = 15000, alarmMaxRepeats = 0,
+    alarmSound = { set = 'HUD_MINI_GAME_SOUNDSET', name = 'TIMER_STOP', ['repeat'] = 3 },
+    locations = {                  -- ⚠ your own coords
+        court  = { label = 'Courtroom 1',        coords = vector3(...) },
+        prison = { label = 'Bolingbroke Prison', coords = vector3(...) },
+    },
+    route = { enabled = true, sprite = 526, colour = 47, arriveDistance = 30.0 },
+    expireAfterHours = 6,
+    schedule = {
+        court_protection   = { required = true, minHoursAhead = 2 },
+        transport_to_court = { required = true, minHoursAhead = 2 },
+        transport_to_jail  = { immediate = true, label = 'after_verdict' },
+        arrest = { immediate = true }, house_arrest_violation = { immediate = true },
+    },
+    dutyToggleCommand = 'jpduty',
+    dutyZone = { enabled = true, coords = vector3(...), radius = 1.5 },
+    gate = { enabled = false, exemptJobs = { 'police', 'sheriff' }, gates = { --[[ { coords = vector3(...), label = 'Main entrance' } ]] } },
 }
 ```
 
-`commandJobs` / `assignableJobs` are your real job names (QB/ESX/Qbox), not DOJ roles — set them to match your police job structure. `dutyZone.coords` ships as a placeholder; set it like the other courthouse zones above.
+| Key | What it does |
+|---|---|
+| `units[].job` | Your job name (framework). Any number of units |
+| `units[].commandMinGrade` | From this grade up: gets the alarm, can claim and assign. Lower grades can only be assigned |
+| `units[].highRiskOnly` | Called only when the judge ticks **High risk** |
+| `routing.<type>.first / fallback` | Who is alarmed first, who after `fallbackAfterSec` (or at once if nobody from `first` is on duty) |
+| `schedule.<type>` | `minHoursAhead` = earliest allowed time; `immediate` = no time field |
+| `locations` | Places in the request form; `court` + `prison` are used for transport routes. **My current location** is always offered |
+| `gate` | Metal detectors: one coord in the middle of each arch. Needs detector arches in your MLO (or your own props) |
+
+Legacy `commandJobs` / `commandMinGrade` / `assignableJobs` still work, but only when `units` is missing.
+
+### Courtroom wall screen (no TV)
+
+The picture floats on the wall. Nothing is spawned. The `.gfx` file is **not** in this product (it belongs to **thers**).
+
+1. Open https://forum.cfx.re/t/release-generic-dui-2d-3d-renderer/131208
+2. Download `generic_texture_renderer_gfx.zip` (Gimme gimme, about 5 KB).
+3. Unzip into `resources`. Keep the folder name `generic_texture_renderer_gfx`. Do not rename files in `stream`.
+4. `ensure generic_texture_renderer_gfx` **above** `ensure Nevera_Court`.
+5. Restart the server once. A new streamed file does not load on a resource restart.
+
+Servers that already run a TV script often already have this folder. Leave it started. Do not copy the `.gfx` into Nevera Court.
+
+Then set only `Config.Courtroom.projector` in `config.lua`:
+
+```lua
+Config.Courtroom.projector = {
+    enabled = true,
+    coords  = vector3(...),          -- centre of the screen on the wall
+    rot     = vector3(0.0, 0.0, 0.0), -- direction the picture faces
+    scale   = 0.085,
+    viewDistance = 18.0,
+}
+```
+
+| Key | What you set |
+|---|---|
+| `coords` | Centre of the screen. Put **Z about 1.3 above the floor**, not at the feet. |
+| `rot` | Which way the picture looks. If it is mirrored or faces the wall, add `180` to `rot.z`. |
+| `scale` | Size. `0.085` is a normal courtroom screen. |
+| `viewDistance` | Who can see it and hear YouTube. |
+| `projectorRoles` | Who may start it: judge, supreme court, prosecutor, defense, public defender, police. |
+| `allowedHosts` | Which sites may be shown (YouTube, Google, Imgur, Discord, …). |
+
+YouTube, images and other links play from the eye target on the wall (**Projector — show evidence**) or from the case, one click. Notes are not shown. If the gfx resource is missing, that player gets one error. The rest of the court still works.
 
 ### Archive (how stashes work — important)
 
@@ -634,9 +745,9 @@ One switch drives **panel + ox_lib + full form HTML folder + NKZ display titles*
 | NKZ titles in DB (`title_*`) | Yes (SQL `03` — HR/DE/FR/ES) |
 | Export / event names | No (always English) |
 
-**Important:** FiveM NUI loads **`web/dist/`** only. After editing `web/public/forms_*`, sync **all** language folders into `web/dist/forms_*/` (or `npm run build`) and restart. Missing `forms_hr` (etc.) in `dist` falls back to `forms_en` and can look mixed EN/locale.
+**Important:** FiveM NUI loads **`web/dist/`**. After editing a form in `web/dist/forms_*/` restart the resource. A file missing in `forms_hr` (etc.) falls back to `forms_en` and can look mixed EN/locale.
 
-**Add a language:** copy `locales/en.lua` → `locales/xx.lua`, register in `fxmanifest.lua`, add `forms_xx/` (37 HTML) + `forms_xx.json`, extend `FORM_LOCALES` / `forms_i18n.js` / `sv_printer.lua`, add SQL `title_xx` columns + seed, set `Config.Locale = 'xx'`.
+**Add a language:** the 5 languages above are built in. You can change any text in `locales/*.lua` and `web/dist/forms_*/`. For a new language open a ticket in [Discord](https://discord.gg/MUw2uR5MZ6) — it needs a small core change.
 
 ---
 
@@ -753,7 +864,7 @@ Give it only to people you fully trust. Every change is logged to Discord and ca
 
 Archive access also requires the correct password for that role in `Config.Archive.Passwords`.
 
-Judicial Police access is **job-based**, not a DOJ role: `Config.JudicialPolice.commandJobs` (+ `commandMinGrade`) can acknowledge and assign requests, `assignableJobs` can be assigned and complete them, and `judge` / `supreme_court` / `clerk` can create requests.
+Judicial Police access is **job-based**, not a DOJ role: every job in `Config.JudicialPolice.units` can be assigned and complete requests; from `commandMinGrade` up they also get the alarm and can claim / assign. `judge` / `supreme_court` / `clerk` create requests. With `onlyOnDuty = true` the alarm only reaches players who are on duty.
 
 ---
 
@@ -791,15 +902,17 @@ Everything is also reachable by clicking in the laptop — commands are shortcut
 |----------------|-------------|---------------|
 | **F5** (default) | Open / close the court laptop | — |
 | `/doj_help` | List DOJ commands | Taskbar → **Help** |
-| `/doj_jury` · `/doj_jury_odjava` | Register / unregister for the jury pool | **Jury** → Register / Unregister |
+| `/doj_jury` · `/doj_jury_leave` | Register / unregister for the jury pool | **Jury** → Register / Unregister |
 | `/doj_commitment` | Commitment orders (custody / DOC / judges) | **Fines** → Commitment orders |
-| `/refreshnkz` | Reload penal code from DB (console or admin) | **Law Code** → Reload from database |
+| `/refreshlaws` | Reload penal code from DB (console or admin) | **Law Code** → Reload from database |
 | `/courtlaws` | Penal code editor (Supreme Court / ACE admin) | **Law Code** → Edit |
 | `/court` | Court services + procedure (*My sentences* for citizens) | **Requests** · **Cases** → case tools |
 | `/courtboard` | Public court board (hearings + verdicts) | **Hearings** → Public board |
 | `/bracelets` | House arrest: list, live map, GPS (police / judges) | Tools → **House arrest** |
 | `/gavel` | Strike the gavel (judge) | Taskbar → **Gavel** |
-| `/jpdezurni` | Judicial Police standing duty on / off | **Judicial Police** |
+| `/jpduty` | Open Judicial Police as police + duty on / off | **Judicial Police** · taskbar 🚨 badge |
+
+Command names live in `Config.Commands` (`juryJoin`, `juryLeave`, `refreshLaws`, `help`) and `Config.JudicialPolice.dutyToggleCommand`. `legacyAliases = true` also keeps the old names (`jpdezurni`, `doj_jury_odjava`, `refreshnkz`).
 
 ### Print flow
 
@@ -826,9 +939,9 @@ Discord transcript = lasting channel history of what was printed (staff evidence
 
 Templates live in **per-language folders** (full HTML each — **37 files** + `form-loader.js`):
 
-| `Config.Locale` | Folder (edit `public`, ship `dist`) |
+| `Config.Locale` | Folder |
 |-----------------|-------------------------------------|
-| `en` | `web/dist/forms_en/` ← `web/public/forms_en/` |
+| `en` | `web/dist/forms_en/` |
 | `hr` | `web/dist/forms_hr/` |
 | `de` | `web/dist/forms_de/` |
 | `fr` | `web/dist/forms_fr/` |
@@ -836,7 +949,6 @@ Templates live in **per-language folders** (full HTML each — **37 files** + `f
 
 Missing file in a locale folder **falls back to `forms_en`**.  
 Optional JSON chrome: `web/dist/i18n/forms_*.json` (HTML `data-i18n`).  
-Do **not** use the old `web/public/forms/` folder (legacy).
 
 Access is gated by `Enums.FormsByRole`. Keep `name=` / `id=` on inputs identical across languages (autofill).
 
@@ -862,7 +974,11 @@ Nevera_Court/
 │       ├── 07_judicial_police.sql    # Judicial Police requests table (fresh + existing DBs)
 │       ├── 08_court_extras.sql       # court services (licences, appointments, treasury, appeals, …)
 │       ├── 09_court_procedure.sql    # plea, probation, restraining orders, detention
-│       └── 10_house_arrest.sql       # house arrest + ankle monitor
+│       ├── 10_house_arrest.sql       # house arrest + ankle monitor
+│       ├── 11_db_editor.sql          # database editor history
+│       ├── 12_judicial_routing.sql   # judicial police: units, escort, high risk
+│       ├── 13_judicial_route.sql     # judicial police: GPS location
+│       └── 14_judicial_expire.sql    # judicial police: expired status
 │   └── companion/README.md           # nevera_printeri is sold separately
 ├── bridge/
 │   ├── framework/                # qb · qbox · esx · standalone
@@ -871,7 +987,7 @@ Nevera_Court/
 │   └── registry.lua · resolve.lua
 ├── client/ · server/ · shared/ · locales/
 ├── editable/                     # open hooks (sv_hooks.lua / cl_hooks.lua)
-├── web/src · web/public · web/dist
+├── web/dist                      # built NUI (forms_* = A4 templates per language)
 ├── config.lua · config_fines.lua
 └── fxmanifest.lua
 ```
@@ -884,28 +1000,18 @@ Typically open (`escrow_ignore`):
 - `locales/**`
 - `bridge/**`
 - `Install/**` · `editable/**`
-- `web/**` (full NUI source + rebuild)
+- `web/**` (built NUI + A4 form HTML — editable)
 
-Encrypted on release: core `server/` + `client/` logic (except files left open by the author).
+Encrypted on release: `server/`, `client/` and `shared/` Lua (core logic). Everything above stays open.
 
 ---
 
-## Development — rebuild NUI
+## Editing the UI
 
-> `web/dist/court_extras.js` and `web/dist/gavel.wav` live in `web/public/` and are copied by Vite — keep them.
-> Currency, branding and the gavel sound work **without** a rebuild.
-
-If you change React UI or forms source:
-
-```bash
-cd web
-npm install
-npm run build
-```
-
-Requirements: **Node.js** (LTS) on the machine that builds. Upload the new `web/dist/` to the server and `ensure` the resource.
-
-Form HTML / i18n can also be edited under `web/public/` then rebuilt so `web/dist/` stays in sync.
+- The resource ships the **built** NUI (`web/dist/`). Currency, branding, colours, commands and every text in `locales/` work **without** a rebuild.
+- A4 form templates: edit `web/dist/forms_<lang>/*.html` directly and restart the resource. Keep `name=` / `id=` on inputs identical across languages.
+- `web/dist/court_extras.js` and `web/dist/gavel.wav` are used at runtime — keep them.
+- Need a change in the React panel itself? Ask in [Discord](https://discord.gg/MUw2uR5MZ6).
 
 ---
 
@@ -955,7 +1061,7 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | Panel shows **Citizen** despite SQL | `doj_roles.citizenid` = live framework id (ESX = `users.identifier`); relog |
 | NKZ shows 0 laws | Run `02_seed_laws_english.sql` |
 | Laws still English on HR/DE/FR/ES | Run `03_seed_laws_i18n.sql`; set `Config.Locale`; restart |
-| Form half English / half locale | Sync all `public/forms_*` → `dist/forms_*`; restart |
+| Form half English / half locale | Check `web/dist/forms_<lang>/` has the file (missing → English fallback); restart |
 | `No such export viewDocument…` | Item `export` must match **folder name** casing |
 | Use deletes item / nothing opens | `consume = 0` + correct `export` folder name |
 | Save / Print error | Add `document_a4` + PNG; check `[sv_printer]` |
@@ -965,7 +1071,15 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | Print rejected: “requires a Discord transcript” | Expected — `Config.Forms.requireTranscript = true` by default. Configure `nevera_court_imgbb_key` + `nevera_court_wh_*`, or set `requireTranscript = false` / add the type to `transcriptExempt`. |
 | Database folder not visible | Expected until you grant the ACE: `add_ace <group> nevera.court.db allow` in server.cfg, restart. Also run `11_db_editor.sql`. |
 | House arrest map is grey / only a grid | `Config.HouseArrest.mapTiles` is empty (built-in radar) or the URL is wrong / that resource isn't started |
-| Judicial Police alarm reaches no one | Check `Config.JudicialPolice.commandJobs` + `commandMinGrade` match your real job names/grades, and that command staff are online. |
+| Judicial Police alarm reaches no one | `units[].job` must be your **exact** job names, grade ≥ `commandMinGrade`, and the player **on duty** (`onlyOnDuty = true`). |
+| Request form: "Select at least one unit" / no units listed | `Config.JudicialPolice.units` is empty or `config.lua` on the server is old — restart after editing. |
+| "Only command staff can do that" on Claim | Your job grade is below that unit's `commandMinGrade`. |
+| Request won't save (new types / location) | Run `Install/sql/12` → `13` → `14` on an existing database. |
+| GPS route goes to the wrong place | Set your own `Config.JudicialPolice.locations` coords (court / prison). |
+| Metal detector never beeps | `gate.enabled = true`, coords in the middle of each arch, player not in `exemptJobs` while on duty. |
+| Wall screen is blank / colour bars | `generic_texture_renderer_gfx` is not started, or the server was not restarted after adding it. It is not shipped inside Court. |
+| Wall picture is mirrored | Add `180` to `Config.Courtroom.projector.rot.z` and restart. |
+| YouTube link refused | The site must be in `Config.Courtroom.allowedHosts`. Notes cannot be projected. |
 
 ---
 
