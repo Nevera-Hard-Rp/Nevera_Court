@@ -3,7 +3,17 @@
 **File purpose:** explain **how to use** the in-game panel (not how to install the resource).  
 Installation = `Install/README.md` · `Install/README_HR.md` · root `README.md`.
 
-UI language follows `Config.Locale` (`en` / `hr` / `de` / `fr`). **Sidebar labels below use English** (same order as the panel).
+UI language follows `Config.Locale` (`en` / `hr` / `de` / `fr` / `es`). **Labels below use English.**
+
+---
+
+## 0. The court laptop (F5)
+
+- **F5** opens the court laptop: **Today in court** on top, a folder for every module you are allowed to use, and **Tools** (House arrest, Database for server owners).
+- Click a folder → it opens in a **window**. **← Back** or **ESC** goes back (ESC first closes an open dialog; on the desktop ESC closes the laptop). **–** minimizes the window to the taskbar.
+- **Taskbar:** open windows · **Help** · **Gavel** (judges) · your court role · clock. **Size** slider in the top bar.
+- **Help** shows every command as a card — click a card to open the right window. You never *have* to type a command.
+- Commands still work as shortcuts and open the laptop on their window: `/courtlaws` → Law Code editor, `/bracelets` → House arrest, `/courtboard` → Hearings → Public board, `/doj_jury` → Jury, `/doj_commitment` → Fines → Commitment orders.
 
 ---
 
