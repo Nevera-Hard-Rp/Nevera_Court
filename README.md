@@ -89,10 +89,12 @@
 **Court laptop (new UI)**
 - F5 opens a **court laptop**: a desktop with folders for every module (Cases, Forms, Requests, Judicial Police, Warrants, Bail / Bond, Hearings, Jury, Fines, Law Code) and tools (House arrest, Database, Admin — roles + audit log)
 - Own dark dropdowns, date fields in `dd.mm.yyyy HH:mm` (per language), no game keys while typing (chat `T` etc. stay closed)
-- Every module opens in its own **window** — back button + **ESC** (closes a dialog → goes back → closes the laptop), minimize to the taskbar, size slider
+- Every module opens in its own **window** — back button + **ESC** (closes a dialog → goes back → closes the laptop), minimize to the taskbar, size slider + **Letters** slider (80–125 % text size, remembered per player; frame and keyboard stay the same)
 - **Taskbar:** open windows, **Help**, **Gavel** (judges), your court role and the clock · **Today in court** card on the desktop
 - **Help** window: one card per command — click it to open the right window; you only see what your role allows
 - Commands still work and open the laptop straight on their window (`/courtlaws`, `/bracelets`, `/courtboard`, …)
+- **Admin → Role Management:** add players (online search or CitizenID), remove roles, ACE admins shown with an **ACE** tag — ESX / QB / Qbox / standalone
+- **Audit log with Rockstar license** of whoever did the action; Judicial Police requests store the license of the officer who claims them
 - **Penal code editor inside the laptop** (Law Code → Edit) — prices, prison time, texts in 5 languages, **activate / deactivate** articles (inactive ones stay in old cases but can't be charged)
 - **House arrest window:** list + **live map** with the home zone, the person's position and status colour (in zone / grace / breach / offline); built-in radar when no map tiles are set
 - **Database editor** (Tools → Database) — whitelisted court tables only, locked key columns, history + Restore; **nobody has it until you grant the ACE `nevera.court.db`**
@@ -175,7 +177,7 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 
 ### Penal code (NKZ)
 - ~93 articles · 9 categories · LawPicker on criminal forms
-- Localized display titles (`title_hr` / `title_de` / `title_fr` / `title_es`) — all seeded in SQL `03` on first install
+- Localized display titles (`title_hr` / `title_de` / `title_fr` / `title_es`) — all seeded by `nevera_court_laws.sql` on first install
 - Server exports for MDT / third-party scripts
 
 ### Prison / commitment (hard RP)
@@ -225,11 +227,12 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - **House arrest + ankle monitor** — home radius (default 100 m), bracelet prop on the leg, live police tracking blips (config switch), warning → police alert with blip → optional auto-revoke + warrant `HA-YYYY-####`, cutting the bracelet with a cutter item, automatic end after the real days, `/bracelets` list for police / judges
 
 ### Court laptop (UI)
-- **F5** opens a laptop-style DOJ panel: desktop with module folders, windows, taskbar, size slider
+- **F5** opens a laptop-style DOJ panel: desktop with module folders, windows, taskbar, size slider, **Letters** slider (bigger / smaller text)
 - Folders you see depend on your court role — the **server** sends the list
 - **Back / ESC** in every window; **Help** on the taskbar lists every command as a clickable card
 - Commands open the laptop directly on their window — players don't have to memorize anything
 - **Admin** folder (Supreme Court / ACE `nevera.sudstvo.admin`): DOJ roles + audit log
+- **Role Management:** *Add player* — search online players (name / server id / CitizenID) or type a CitizenID, pick a role, save. *Remove role* on every row. ACE admins are listed with an **ACE** tag (read-only). Works on ESX, QBCore, Qbox and standalone
 - **Penal code editor** in the laptop: activate / deactivate articles, texts in 5 languages
 - **Taskbar badge** 🚨 *Judicial Police N* — blinks while a request is pending (`Config.UI.blink`)
 - Typing in the laptop never reaches the game (no chat on `T`, no weapon keys)
@@ -264,8 +267,9 @@ Want tiles of **your own** map (custom MLOs / map edits)? [McLovinIt101/GTAV-Map
 - `editable/sv_hooks.lua` · `editable/cl_hooks.lua` (escrow-open) — `OnVerdict`, `OnMoneyIn`, `OnCourtEvent`, `OnCourtCall`, `OnGavel`
 
 ### Admin & audit
-- Role assignment (Supreme Court admin panel)
-- Audit log for key DOJ actions
+- Role assignment (Supreme Court admin panel): add online / offline players by CitizenID, remove roles, ACE admins shown read-only
+- Audit log for key DOJ actions — every row stores the actor's **Rockstar license** (`license:…`) next to the name
+- Judicial Police requests store the **license of the officer who claims** them (shown under *Acknowledge*)
 - Discord: system event logs + **printed form transcripts** (image archive per channel)
 
 ### Framework & MDT bridges (new)
@@ -317,25 +321,28 @@ Use the **exact folder name** in `ensure`. Printer / NUI paths resolve with `Get
 
 ### 2. Database
 
-Same schema for every framework — **fresh install**, run in order:
+Same schema for every framework. **Fresh install** — run two files:
 
 ```text
-Install/sql/01 → 02 → 03 → 04 → 07 → 08 → 09 → 10 → 11 → 12 → 13 → 14
+Install/sql/nevera_court.sql        # all tables — safe to run again, never deletes rows
+Install/sql/nevera_court_laws.sql   # penal code (93 articles, 5 languages) — run ONCE
 ```
 
-Do **not** run `05_*` / `06_*` / `sql/upgrade/*` on a new database (those are for existing DBs only). `07` (Judicial Police) and `08` (court services: licences, appointments, treasury, appeals, expungement, plea deals, evidence, minutes) and `09` (court procedure: plea, probation / community service, restraining orders, detention) and `10` (house arrest) and `11` (database editor history) and `12`–`14` (Judicial Police units / routing, GPS location, expiry) are safe on both fresh and existing databases. **Updating from an older Court?** Run `12` → `13` → `14` once — without them new request types and routes fail to save. See `Install/README.md`.
+**Updating an older Court?** Run `nevera_court.sql` again. New columns (audit license, Judicial Police claim license) are added when the resource starts. `Install/sql/upgrade/` is only for very old databases — see its README.
+
+⚠ Running `nevera_court_laws.sql` again resets the penal code to defaults (in-game Law Code edits are lost).
 
 **Verify:**
 
 ```sql
 SELECT COUNT(*) AS categories FROM doj_law_categories;  -- expect 9
 SELECT COUNT(*) AS laws FROM doj_laws;                  -- expect ~93
-SELECT COUNT(*) AS laws_hr FROM doj_laws WHERE title_hr IS NOT NULL;  -- ~93 after 03
-SELECT COUNT(*) AS laws_es FROM doj_laws WHERE title_es IS NOT NULL;  -- ~93 after 03
+SELECT COUNT(*) AS laws_hr FROM doj_laws WHERE title_hr IS NOT NULL;  -- ~93 after nevera_court_laws.sql
+SELECT COUNT(*) AS laws_es FROM doj_laws WHERE title_es IS NOT NULL;  -- ~93 after nevera_court_laws.sql
 SELECT * FROM doj_roles WHERE role = 'supreme_court';
 ```
 
-**ESX `04`:** use exact `users.identifier` (e.g. `char1:…`), not a short QB citizenid.
+**ESX `first_supreme_court.sql`:** use exact `users.identifier` (e.g. `char1:…`), not a short QB citizenid.
 ### 3. Inventory item (`document_a4`)
 
 | Inventory | File |
@@ -726,10 +733,10 @@ Form **screenshot** channels use `server.cfg` convars (below), not this table.
 | Code | Language | UI (`locales/`) | Full A4 HTML | Form chrome JSON | NKZ titles |
 |------|----------|-----------------|--------------|------------------|------------|
 | `en` | English (default) | `en.lua` | `forms_en/` | `forms_en.json` | `title` (base) |
-| `hr` | Croatian | `hr.lua` | `forms_hr/` | `forms_hr.json` | `title_hr` (`03`) |
-| `de` | German | `de.lua` | `forms_de/` | `forms_de.json` | `title_de` (`03`) |
-| `fr` | French | `fr.lua` | `forms_fr/` | `forms_fr.json` | `title_fr` (`03`) |
-| `es` | Spanish | `es.lua` | `forms_es/` | `forms_es.json` | `title_es` (`03`) |
+| `hr` | Croatian | `hr.lua` | `forms_hr/` | `forms_hr.json` | `title_hr` (laws SQL) |
+| `de` | German | `de.lua` | `forms_de/` | `forms_de.json` | `title_de` (laws SQL) |
+| `fr` | French | `fr.lua` | `forms_fr/` | `forms_fr.json` | `title_fr` (laws SQL) |
+| `es` | Spanish | `es.lua` | `forms_es/` | `forms_es.json` | `title_es` (laws SQL) |
 
 ### What `Config.Locale` controls
 
@@ -742,7 +749,7 @@ One switch drives **panel + ox_lib + full form HTML folder + NKZ display titles*
 | Print legal warning | Yes |
 | **Full HTML court forms** (`forms_<locale>/`) | Yes (37 templates each) |
 | HTML `data-i18n` chrome (`forms_*.json`) | Yes |
-| NKZ titles in DB (`title_*`) | Yes (SQL `03` — HR/DE/FR/ES) |
+| NKZ titles in DB (`title_*`) | Yes (`nevera_court_laws.sql` — HR/DE/FR/ES) |
 | Export / event names | No (always English) |
 
 **Important:** FiveM NUI loads **`web/dist/`**. After editing a form in `web/dist/forms_*/` restart the resource. A file missing in `forms_hr` (etc.) falls back to `forms_en` and can look mixed EN/locale.
@@ -849,7 +856,7 @@ set nevera_court_wh_audit    "https://discord.com/api/webhooks/..."
 
 Assignable DB roles (new install): `supreme_court`, `judge`, `prosecutor`, `defense_attorney`, `public_defender`, `police`.
 
-**First admin:** edit and run `Install/sql/04_first_supreme_court.sql` with your **citizenid**, or assign via the Admin tab in-game.
+**First admin:** give yourself ACE `nevera.sudstvo.admin`, open **Admin → Role Management → Add player** and assign `supreme_court`. Or edit and run `Install/sql/first_supreme_court.sql` with your **citizenid**.
 
 Optional ACE / group mappings: `Config.Permissions`.
 
@@ -965,20 +972,10 @@ Nevera_Court/
 │   ├── server_cfg_discord.cfg
 │   ├── items/                    # ox + qb-core + legacy ESX item
 │   └── sql/
-│       ├── 01_nevera_court.sql       # schema (all frameworks; includes title_hr/de/fr/es)
-│       ├── 02_seed_laws_english.sql  # English NKZ base
-│       ├── 03_seed_laws_i18n.sql     # HR + DE + FR + ES titles
-│       ├── 04_first_supreme_court.sql
-│       ├── 05_migrate_*.sql          # UPGRADE only (existing DBs)
-│       ├── 06_migrate_forms_sig_image.sql  # UPGRADE only
-│       ├── 07_judicial_police.sql    # Judicial Police requests table (fresh + existing DBs)
-│       ├── 08_court_extras.sql       # court services (licences, appointments, treasury, appeals, …)
-│       ├── 09_court_procedure.sql    # plea, probation, restraining orders, detention
-│       ├── 10_house_arrest.sql       # house arrest + ankle monitor
-│       ├── 11_db_editor.sql          # database editor history
-│       ├── 12_judicial_routing.sql   # judicial police: units, escort, high risk
-│       ├── 13_judicial_route.sql     # judicial police: GPS location
-│       └── 14_judicial_expire.sql    # judicial police: expired status
+│       ├── nevera_court.sql          # ALL tables — first install + updates (safe to re-run)
+│       ├── nevera_court_laws.sql     # penal code EN + HR/DE/FR/ES — run once
+│       ├── first_supreme_court.sql   # optional first admin
+│       └── upgrade/                  # very old databases only (see upgrade/README.md)
 │   └── companion/README.md           # nevera_printeri is sold separately
 ├── bridge/
 │   ├── framework/                # qb · qbox · esx · standalone
@@ -1059,7 +1056,7 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 |---------|-----|
 | Resource won’t start | Check `oxmysql` + `ox_lib`; read console |
 | Panel shows **Citizen** despite SQL | `doj_roles.citizenid` = live framework id (ESX = `users.identifier`); relog |
-| NKZ shows 0 laws | Run `02_seed_laws_english.sql` |
+| NKZ shows 0 laws | Run `nevera_court_laws.sql` once |
 | Laws still English on HR/DE/FR/ES | Run `03_seed_laws_i18n.sql`; set `Config.Locale`; restart |
 | Form half English / half locale | Check `web/dist/forms_<lang>/` has the file (missing → English fallback); restart |
 | `No such export viewDocument…` | Item `export` must match **folder name** casing |
@@ -1067,14 +1064,16 @@ Events & NUI callbacks use English names (`nevera_court:…`, `getCases`, `print
 | Save / Print error | Add `document_a4` + PNG; check `[sv_printer]` |
 | Archive won’t open | Role + `Config.Archive.Passwords` |
 | Discord screenshots fail | `nevera_court_imgbb_key` + `nevera_court_wh_*` |
-| migrate i18n “duplicate column” | Fresh install: skip `05_*`. Existing DB: use migrate scripts once. |
+| migrate i18n “duplicate column” | Fresh install: skip `sql/upgrade/`. Existing DB: use those scripts once. |
 | Print rejected: “requires a Discord transcript” | Expected — `Config.Forms.requireTranscript = true` by default. Configure `nevera_court_imgbb_key` + `nevera_court_wh_*`, or set `requireTranscript = false` / add the type to `transcriptExempt`. |
-| Database folder not visible | Expected until you grant the ACE: `add_ace <group> nevera.court.db allow` in server.cfg, restart. Also run `11_db_editor.sql`. |
+| Database folder not visible | Expected until you grant the ACE: `add_ace <group> nevera.court.db allow` in server.cfg, restart. Also run `nevera_court.sql` (creates `doj_db_history`). |
 | House arrest map is grey / only a grid | `Config.HouseArrest.mapTiles` is empty (built-in radar) or the URL is wrong / that resource isn't started |
 | Judicial Police alarm reaches no one | `units[].job` must be your **exact** job names, grade ≥ `commandMinGrade`, and the player **on duty** (`onlyOnDuty = true`). |
 | Request form: "Select at least one unit" / no units listed | `Config.JudicialPolice.units` is empty or `config.lua` on the server is old — restart after editing. |
 | "Only command staff can do that" on Claim | Your job grade is below that unit's `commandMinGrade`. |
-| Request won't save (new types / location) | Run `Install/sql/12` → `13` → `14` on an existing database. |
+| Request won't save (new types / location) | Run `Install/sql/nevera_court.sql` again on the existing database. |
+| Role Management shows 0 players | Normal on a fresh install — use **Add player**. ACE admins appear with the **ACE** tag. |
+| Audit log / claim has no license | Older rows were saved before this update. New actions store it; the column is added on resource start (or run `Install/sql/upgrade/audit_rockstar_license.sql` / `judicial_claim_license.sql`). |
 | GPS route goes to the wrong place | Set your own `Config.JudicialPolice.locations` coords (court / prison). |
 | Metal detector never beeps | `gate.enabled = true`, coords in the middle of each arch, player not in `exemptJobs` while on duty. |
 | Wall screen is blank / colour bars | `generic_texture_renderer_gfx` is not started, or the server was not restarted after adding it. It is not shipped inside Court. |
