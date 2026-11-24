@@ -11,10 +11,23 @@ Config = Config or {}
 
 Config.Debug = false            -- true = print debug messages to console
 Config.Locale = 'en'            -- UI + form HTML folder: en→forms_en | hr→forms_hr | de→forms_de | fr→forms_fr | es→forms_es
-                                -- Put full translated .html files in web/public/forms_<lang>/ then npm run build
+-- Hours east of UTC for texts the server writes itself (Discord). Player toasts use the PC clock.
+-- e.g. 1 = CET (winter), 2 = CEST (summer), -5 = EST. nil = UTC on the server side only.
+Config.TimeZoneOffset = 0
+                                -- Form templates live in web/dist/forms_<lang>/ (edit the HTML, restart the resource)
                                 -- Missing file falls back to forms_en
 Config.Currency = '€'           -- Money symbol shown everywhere (UI, fines, fees, notifications): '€', '$', '£', ...
 Config.PageSize = 20            -- Records per page (pagination)
+
+-- Chat commands. Change the name here; the script reads these keys.
+-- legacyAliases = true also keeps the old names: jpdezurni, doj_jury_odjava, refreshnkz.
+Config.Commands = {
+    juryJoin      = 'doj_jury',
+    juryLeave     = 'doj_jury_leave',
+    refreshLaws   = 'refreshlaws',
+    help          = 'doj_help',
+    legacyAliases = false,
+}
 
 -- Your server / court name. Used in UI titles, the official seal, Discord logs and the A4 forms
 -- (the form templates say "Nevera" — it is replaced at runtime with ServerName).
@@ -136,6 +149,13 @@ Config.Courthouse = {
 }
 
 -- Projector + gavel (move coords to your courtroom MLO)
+-- The .gfx is NOT included. Download the free tool by thers and start it before this resource:
+--   https://forum.cfx.re/t/release-generic-dui-2d-3d-renderer/131208
+-- Unzip generic_texture_renderer_gfx into resources, then in server.cfg:
+--   ensure generic_texture_renderer_gfx
+--   ensure Nevera_Court
+-- coords = centre of the screen on the wall (Z about 1.3 above the floor).
+-- rot    = direction the picture faces. If it is mirrored, add 180 to rot.z.
 Config.Courtroom = {
     projector = {
         enabled      = true,
@@ -153,12 +173,11 @@ Config.Courtroom = {
         coords    = vector3(234.89, -1314.04, 29.35),
         heading   = 0.0,
         spawnProp = true,          -- static gavel on the judge's desk at coords
-        prop      = `prop_cs_gavel`, -- if the model is missing in game files → prop_tool_hammer is used
+        prop      = `prop_cs_gavel`, -- desk prop only; a missing model spawns nothing (no claw hammer)
+        -- No strike animation. amb@world_human_hammering is a worker nailing wood
+        -- (claw hammer in hand + three loud hits). The strike is the gavel sound only.
         range     = 22.0,          -- hearing distance (m)
         command   = 'gavel',       -- /gavel for judges ('' = disabled). Also: target eye + NUI button
-        animDict  = 'amb@world_human_hammering@male@base',
-        animName  = 'base',
-        animMs    = 1600,
         -- Sound: 'nui' = real gavel sound (web/dist/gavel.wav) with distance fall-off
         --        'native' = GTA sound (soundName / soundSet below)
         sound     = 'nui',
@@ -366,41 +385,103 @@ Config.Prison = {
 Config.JudicialPolice = {
     enabled = true,
 
-    -- Command roles that get the alarm first (deputy chief / chief / duty
-    -- officer) — NOT every online officer. They then assign the request.
-    -- Same job.grade.level check style as Config.Prison.executeJobs.
-    commandJobs = {
-        'police', 'sheriff', 'bcso', 'sasp', 'lspd', 'judicial_police',
+    -- ⚠ SET YOUR OWN POLICE JOB NAMES. `job` must match the job name in your framework
+    -- exactly (QBCore shared/jobs.lua, Qbox qbx_core/shared/jobs.lua, ESX `jobs` table).
+    -- commandMinGrade = from this grade up a player gets the alarm and can claim / assign;
+    --                   lower grades can only be assigned to a request.
+    -- highRiskOnly    = only alerted when the judge ticks "High risk" (e.g. SWAT).
+    -- Remove the ones your server doesn't have, add as many as you need.
+    units = {
+        { job = 'police',  label = 'LSPD', commandMinGrade = 3 },
+        { job = 'sheriff', label = 'BCSO', commandMinGrade = 3 },
+        -- { job = 'judicial', label = 'Judicial Police', commandMinGrade = 3 },
+        -- { job = 'swat',     label = 'SWAT',            commandMinGrade = 3, highRiskOnly = true },
     },
-    commandMinGrade = 4,   -- tune to whatever grade is "chief/deputy/duty officer" on your job
 
-    -- Jobs that can be ASSIGNED a request and execute it (mirrors Config.Prison.executeJobs)
-    assignableJobs = {
-        'police', 'sheriff', 'bcso', 'sasp', 'lspd', 'correctional', 'doc', 'judicial_police',
+    -- Who gets which request type. `first` = alarmed immediately.
+    -- `fallback` = alarmed if nobody from `first` is online/on duty, or nobody
+    -- claimed within fallbackAfterSec. The judge can still change the ticks in the form.
+    -- Tip: with a dedicated judicial police job put it in `first` for the court / transport types
+    --      and your regular police in `fallback`.
+    routing = {
+        court_protection       = { first = { 'police' }, fallback = { 'sheriff' }, fallbackAfterSec = 120 },
+        transport_to_court     = { first = { 'police' }, fallback = { 'sheriff' }, fallbackAfterSec = 120 },
+        transport_to_jail      = { first = { 'police' }, fallback = { 'sheriff' }, fallbackAfterSec = 120 },
+        arrest                 = { first = { 'police', 'sheriff' } },
+        house_arrest_violation = { first = { 'police', 'sheriff' } },
     },
 
-    -- Repeating alarm (sound/banner) until a command role acknowledges
+    onlyOnDuty = true,  -- alarm only players whose framework duty is on (same duty as the job / F6)
+
+    -- Legacy (only used when `units` above is missing or empty):
+    -- commandJobs = { 'police', 'sheriff' }, commandMinGrade = 3,
+    -- assignableJobs = { 'police', 'sheriff' },
+
+    -- Repeating alarm (sound/banner) until a command role claims the request
     alarmIntervalMs  = 15000,
-    alarmMaxRepeats  = 0,    -- 0 = forever until acknowledged
+    alarmMaxRepeats  = 0,    -- 0 = forever until claimed
+    -- `repeat` is a Lua keyword, so the key is written in brackets.
+    alarmSound = { set = 'HUD_MINI_GAME_SOUNDSET', name = 'TIMER_STOP', ['repeat'] = 3 },
+
+    -- Named places the court can pick in the request form ("My current location" is always offered too).
+    -- Transport routes use `court` and `prison`. ⚠ Set your own coords (stand at the entrance, copy x/y/z).
+    -- You can add more, e.g. court2 = { label = 'Courtroom 2', coords = vector3(...) }.
+    locations = {
+        court  = { label = 'Courtroom 1',        coords = vector3(234.89, -1309.04, 29.22) },
+        prison = { label = 'Bolingbroke Prison', coords = vector3(1856.12, 2608.04, 45.19) },
+    },
+
+    -- Blip + GPS line for the officer who claims or is assigned.
+    route = { enabled = true, sprite = 526, colour = 47, arriveDistance = 30.0 },
+
+    -- Pending or acknowledged requests older than this become expired.
+    -- 0 = leave them. Assigned requests are not expired.
+    expireAfterHours = 6,
+
+    -- When the request must be scheduled. immediate types hide the time field
+    -- and are stored as "now". required types must be at least minHoursAhead.
+    schedule = {
+        court_protection       = { required = true,  minHoursAhead = 2 },
+        transport_to_court     = { required = true,  minHoursAhead = 2 },
+        transport_to_jail      = { required = false, immediate = true, label = 'after_verdict' },
+        arrest                 = { required = false, immediate = true },
+        house_arrest_violation = { required = false, immediate = true },
+    },
 
     -- /command to toggle "on duty" (standing duty, part A above) — phone app can call the same export
-    dutyToggleCommand = 'jpdezurni',
+    dutyToggleCommand = 'jpduty',
 
     -- Optional target point at the court entrance to toggle duty in-world
-    -- (same ox_target/qb-target bridge as the rest of Court). Hook your own
-    -- nevera_strazar metal-detector gate separately for the actual search —
-    -- this is just the duty checkpoint marker.
+    -- (same ox_target/qb-target bridge as the rest of Court).
     dutyZone = {
         enabled = true,
         coords  = vector3(234.89, -1309.04, 29.22), -- move to your court entrance
         radius  = 1.5,
     },
 
+    -- Walk-through metal detectors (needs detector arches in your MLO or your own props).
+    -- Stand in the middle of each arch and copy the coords into `gates`.
+    -- On-duty jobs in exemptJobs pass silently. Anyone else carrying a weapon sets off the
+    -- beep (heard within hearDistance) and on-duty exemptJobs players get a notification.
+    gate = {
+        enabled = false,
+        radius = 1.15,
+        hearDistance = 25.0,
+        cooldownSec = 8,
+        exemptOnDuty = true,
+        exemptJobs = { 'police', 'sheriff' },
+        sound = { name = 'Beep_Red', set = 'DLC_HEIST_HACKING_SNAKE_SOUNDS', repeats = 5 },
+        gates = {
+            -- { coords = vector3(0.0, 0.0, 0.0), label = 'Main entrance' },
+        },
+    },
+
     -- Completion note is NEVER hard-required (matches existing warrant/commitment notes) —
     -- only soft-recommended in the UI for the type(s) below.
     noteRecommended = {
-        prisoner_transport = true,
-        court_protection    = false,
+        transport_to_court = true,
+        transport_to_jail  = true,
+        court_protection   = false,
     },
 
     -- Same notify bridge pattern as Config.Prison.notify
@@ -431,6 +512,7 @@ Config.UI = {
     openKey        = 'F5',
     closeKeys      = { 'Escape', 'F5' },
     notifyDuration = 6000,
+    blink          = true, -- taskbar badge pulse; set false to keep a steady badge
     tablePageSize  = 15,
     pageSize       = 20,
 
@@ -533,7 +615,7 @@ Config.Archive = {
 -- ============================================================
 --  COURT SERVICES — ox_lib menus
 --  Open: /court (Config.Extras.command), DOJ main menu → "Court services",
---        or the eye on Config.Courthouse.mainZone. SQL: Install/sql/08_court_extras.sql
+--        or the eye on Config.Courthouse.mainZone. SQL: Install/sql/nevera_court.sql
 -- ============================================================
 
 Config.Extras = {
@@ -673,7 +755,7 @@ Config.DbEditor = {
 }
 
 -- ============================================================
---  COURT PROCEDURE (Install/sql/09_court_procedure.sql)
+--  COURT PROCEDURE (Install/sql/nevera_court.sql)
 -- ============================================================
 
 -- Arraignment: judge enters the plea (guilty / not guilty / no contest).
@@ -731,7 +813,7 @@ Config.Detention = {
     warnBeforeHours = 12,   -- warn judge + prosecutor before it expires
 }
 
--- House arrest + ankle monitor (Install/sql/10_house_arrest.sql)
+-- House arrest + ankle monitor (Install/sql/nevera_court.sql)
 -- Judge sets the home address (his own position or the defendant's) and a radius.
 -- Leaving the radius → warning → police alert (+ optional warrant / revoke).
 Config.HouseArrest = {
@@ -767,10 +849,14 @@ Config.HouseArrest = {
     radius           = 100,
     -- Live map in the laptop. Empty = built-in radar (no map images ship with this resource).
     -- Same CRS as tk_mdt: {z}/{x}/{y}.png, no TMS flip. Zoom 2–5.
-    -- Optional: URL of map tiles you are allowed to use, e.g. from an MDT you own:
-    --   'https://cfx-nui-tk_mdt/web/build/tiles/{z}/{x}/{y}.png'
+    -- Optional: URL of map tiles you are allowed to use. Examples (same layout, no calibration needed):
+    --   'https://cfx-nui-tk_mdt/web/build/tiles/{z}/{x}/{y}.png'                                  -- if you own tk_mdt
+    --   'https://raw.githubusercontent.com/meesvrh/GTAV-Map-Tiles/main/tiles/atlas/{z}/{x}/{y}.jpg'      -- free (atlas)
+    --   'https://raw.githubusercontent.com/meesvrh/GTAV-Map-Tiles/main/tiles/satellite/{z}/{x}/{y}.jpg'  -- free (satellite)
+    --   'https://viruxe.github.io/gtav-map-tiles/atlas/{z}/{x}-{y}.webp'        -- free (atlas, also satelite / grid)
+    -- Third-party images, use at your own discretion. For many players, download them into your own resource.
     -- No map images ship with this resource.
-    mapTiles         = '',
+    mapTiles = '',
     map              = {
         minZoom = 2,
         maxZoom = 5,
