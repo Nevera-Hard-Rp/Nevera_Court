@@ -120,15 +120,19 @@ Docs: [Nevera Docs — Court](https://nevera-hard-rp.com/Nevera-Docs/#/docs/suds
 
 ---
 ## 📸 Screenshots
-<img width="2245" height="1274" alt="01_desktop_lite" src="https://github.com/user-attachments/assets/cb7725ca-e04c-4ea5-b888-56dc004c868e" />
-<img width="2316" height="1269" alt="02_cases" src="https://github.com/user-attachments/assets/de2d402e-da73-4e8d-9f57-f9a4f25ac03d" />
-<img width="2318" height="1276" alt="03_case_open" src="https://github.com/user-attachments/assets/8914e54c-1047-4cc5-8a89-f2bc18777771" />
-<img width="928" height="1211" alt="04_arrest_warrant" src="https://github.com/user-attachments/assets/66843502-c297-4c5a-8600-4dc482199179" />
-<img width="928" height="1212" alt="05_print_warning" src="https://github.com/user-attachments/assets/549d38e6-1752-496e-baac-43b145af83df" />
-<img width="423" height="491" alt="06_discord_transcript" src="https://github.com/user-attachments/assets/9896fa09-ec99-427c-913c-34e4d21baa40" />
-<img width="2314" height="1274" alt="07_law_editor" src="https://github.com/user-attachments/assets/4d55d2e3-c670-4a13-ae11-c4e26dba7fe6" />
-<img width="2314" height="1273" alt="08_role_management" src="https://github.com/user-attachments/assets/b4d46a78-1edd-4b4a-9173-35787d545f38" />
-<img width="2310" height="1278" alt="09_languages_DE_HR_FR_ES" src="https://github.com/user-attachments/assets/55b2e2c6-1281-4dbd-ba15-969b79de0c0c" />
+<img width="2315" height="1272" alt="01_desktop" src="https://github.com/user-attachments/assets/30bb03f0-c773-4fd1-8262-2b874f267cc0" />
+<img width="2308" height="1267" alt="02_judicial_police_request" src="https://github.com/user-attachments/assets/9da8e096-f7c6-4a63-b8ff-5fa24008b25d" />
+<img width="2319" height="1278" alt="03_judicial_police_claimed" src="https://github.com/user-attachments/assets/69036b92-f5a1-457e-93c2-20df982bf18d" />
+<img width="2312" height="1271" alt="04_house_arrest_map" src="https://github.com/user-attachments/assets/c3fbdc0e-f75c-4e04-9116-54158e34ac61" />
+<img width="2316" height="1269" alt="05_cases" src="https://github.com/user-attachments/assets/9660176a-8eda-412a-9ba6-8e464372ff1b" />
+<img width="2318" height="1276" alt="06_case_open" src="https://github.com/user-attachments/assets/3a330c99-6858-4e73-b3dc-6468ee9bb1e8" />
+<img width="928" height="1211" alt="07_arrest_warrant" src="https://github.com/user-attachments/assets/e88486e7-fbb9-4736-9f07-a4737e9d01da" />
+<img width="928" height="1212" alt="08_print_warning" src="https://github.com/user-attachments/assets/86a256f6-5e0a-4f9b-80c4-b2e1cd1c3362" />
+<img width="423" height="491" alt="09_discord_transcript" src="https://github.com/user-attachments/assets/af3b724b-3409-48df-a8e7-cbe3f8a62619" />
+<img width="2314" height="1274" alt="10_law_editor" src="https://github.com/user-attachments/assets/e706bedd-5649-4317-bac4-c6fc607bb9ae" />
+<img width="2314" height="1273" alt="11_role_management" src="https://github.com/user-attachments/assets/e9aa2943-2043-4cdc-bbf6-d5752d284338" />
+<img width="2307" height="1273" alt="12_help" src="https://github.com/user-attachments/assets/12c3af1a-67ef-4004-a3f5-403d7dfcd719" />
+<img width="2310" height="1278" alt="13_languages_DE_HR_FR_ES" src="https://github.com/user-attachments/assets/90d3eaca-f72e-420f-81cc-f9bb0620bb05" />
 
 
 ## Overview
