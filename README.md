@@ -119,6 +119,17 @@
 Docs: [Nevera Docs — Court](https://nevera-hard-rp.com/Nevera-Docs/#/docs/sudstvo/overview) · Support: [discord.gg/MUw2uR5MZ6](https://discord.gg/MUw2uR5MZ6)
 
 ---
+## 📸 Screenshots
+<img width="2245" height="1274" alt="01_desktop_lite" src="https://github.com/user-attachments/assets/cb7725ca-e04c-4ea5-b888-56dc004c868e" />
+<img width="2316" height="1269" alt="02_cases" src="https://github.com/user-attachments/assets/de2d402e-da73-4e8d-9f57-f9a4f25ac03d" />
+<img width="2318" height="1276" alt="03_case_open" src="https://github.com/user-attachments/assets/8914e54c-1047-4cc5-8a89-f2bc18777771" />
+<img width="928" height="1211" alt="04_arrest_warrant" src="https://github.com/user-attachments/assets/66843502-c297-4c5a-8600-4dc482199179" />
+<img width="928" height="1212" alt="05_print_warning" src="https://github.com/user-attachments/assets/549d38e6-1752-496e-baac-43b145af83df" />
+<img width="423" height="491" alt="06_discord_transcript" src="https://github.com/user-attachments/assets/9896fa09-ec99-427c-913c-34e4d21baa40" />
+<img width="2314" height="1274" alt="07_law_editor" src="https://github.com/user-attachments/assets/4d55d2e3-c670-4a13-ae11-c4e26dba7fe6" />
+<img width="2314" height="1273" alt="08_role_management" src="https://github.com/user-attachments/assets/b4d46a78-1edd-4b4a-9173-35787d545f38" />
+<img width="2310" height="1278" alt="09_languages_DE_HR_FR_ES" src="https://github.com/user-attachments/assets/55b2e2c6-1281-4dbd-ba15-969b79de0c0c" />
+
 
 ## Overview
 
