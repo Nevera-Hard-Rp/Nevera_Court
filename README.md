@@ -65,7 +65,7 @@
 - **Walk-through metal detectors** at the courthouse (`gate`) — beep for anyone carrying a weapon, on-duty officers pass and get notified
 - `/jpduty` (or the courthouse-entrance target) toggles duty — the same framework duty as the job
 
-**Court services** (ox_lib menus: `/court`, DOJ menu → *Court services*, case menu → *Case tools*, courthouse eye)
+**Court services** (ox_lib menu: `/courtservices`, laptop **Help** → *Court services*, DOJ menu → *Court services*, case menu → *Case tools*)
 - **Bar exam & licences** — multiple-choice exam, fee, cooldown, judge approval, automatic DOJ role + bar number, revoke
 - **Attorney appointments** — citizens request a time with a licensed attorney; accept / decline / reschedule / done
 - **DOJ treasury** — fines, court / exam / expungement fees and forfeited bail are logged; optional society push (qb-banking, qb-management, Renewed-Banking, okokBanking, esx_addonaccount)
@@ -98,6 +98,18 @@
 - **Penal code editor inside the laptop** (Law Code → Edit) — prices, prison time, texts in 5 languages, **activate / deactivate** articles (inactive ones stay in old cases but can't be charged)
 - **House arrest window:** list + **live map** with the home zone, the person's position and status colour (in zone / grace / breach / offline); built-in radar when no map tiles are set
 - **Database editor** (Tools → Database) — whitelisted court tables only, locked key columns, history + Restore; **nobody has it until you grant the ACE `nevera.court.db`**
+
+**Forms & cases**
+- **Forms linked to a case** — "+ New Form" inside a case saves the case number (`CR-…` / `CV-…`); the server checks the case exists and that the player has access to it
+- **Automatic archiving** — when a case is *Dismissed* or *Closed*, all its forms become `archived`
+- **Forms page** — enter a case number to list its forms; status filter matches the database (draft, filed, approved, denied, signed, archived, withdrawn)
+- Bail payments / refunds, civil damages and treasury payouts go through the framework bridge (QB / Qbox / ESX / standalone); money that can't be paid right now becomes a **pending fine** — the treasury can never pay out more than it holds
+
+**Job names from `config.lua` only**
+- `Config.JobRoleMap` — your framework job → court role (e.g. `Config.JobRoleMap.sudac = 'judge'`), no protected code to touch
+- Police jobs are collected automatically from `JudicialPolice.units` / `assignableJobs` / `commandJobs`, `Prison.executeJobs`, `HouseArrest.policeJobs` and `RestrainingOrders.policeJobs`
+- `Config.Permissions.policeProsecutorGrade` (police of that grade also act as prosecutor, `false` = off) · `Config.AdminPermissions` (who counts as Supreme Court)
+- Every police job can file forms, not just one `policeJob`
 
 **Editions & customization**
 - `Config.Edition = 'full' | 'lite'` — Lite keeps only the core court; every module can be switched on/off in `Config.Modules`
@@ -205,14 +217,14 @@ Designed for **Tebex / Cfx.re Asset Escrow**: buyers edit configs, locales, brid
 - Optional per-role stashes (`UseRoleStashes = true`): citizen personal stash → police / DA / defense / judge / Supreme Court stacks
 - Allowed item: `document_a4` · configurable archive locations
 
-### Court services (`/court`, case menu → *Case tools*, courthouse eye)
+### Court services (`/courtservices`, laptop Help → *Court services*, case menu → *Case tools*)
 - **Bar exam & licences** — multiple-choice exam, fee, cooldown, judge approval, automatic DOJ role + bar number, revoke
 - **Attorney appointments** — citizens book a licensed attorney; accept / decline / reschedule / done
 - **DOJ treasury** — fines, fees and forfeited bail logged; optional society push (qb-banking, qb-management, Renewed-Banking, okokBanking, esx_addonaccount)
 - **Appeals** to the Supreme Court — granting reopens the case and cancels pending commitment orders / unpaid fines
 - **Expungement** — clear an old conviction (ignored by `GetCriminalRecord`)
 - **Plea deals** — prosecutor offers → defense accepts → judge approves = guilty verdict
-- **Evidence per case** — images / video / links / notes, one click onto the wall screen. No TV prop. YouTube plays in the screen itself.
+- **Evidence per case** — images / video / links / notes, one click onto the wall screen. No TV prop. YouTube plays in the screen itself. Only **public** links work (see [Evidence on the wall screen](#evidence-on-the-wall-screen)).
 - **Courtroom session** — all rise / be seated / order / recess + minutes to Discord
 - **Public court board** — upcoming hearings + recent public verdicts (`/courtboard`)
 
@@ -330,6 +342,16 @@ Install/sql/nevera_court_laws.sql   # penal code (93 articles, 5 languages) — 
 
 **Updating an older Court?** Run `nevera_court.sql` again. New columns (audit license, Judicial Police claim license) are added when the resource starts. `Install/sql/upgrade/` is only for very old databases — see its README.
 
+#### Upgrade — database from an earlier build
+
+If your database was created **before** this build, run once:
+
+```text
+Install/sql/upgrade/forms_status.sql   # adds form statuses 'archived' and 'withdrawn'
+```
+
+Without it, case-linked forms can't be archived when a case is closed. A fresh install does **not** need it (already in `nevera_court.sql`).
+
 ⚠ Running `nevera_court_laws.sql` again resets the penal code to defaults (in-game Law Code edits are lost).
 
 **Verify:**
@@ -400,6 +422,15 @@ Optional Discord convars — see [Discord & webhooks](#discord--webhooks) and `I
 - [ ] Judicial Police: `units` = **your** police job names + grades, `routing`, `locations` (court + prison coords), `dutyZone.coords`
 - [ ] Metal detectors (optional): `gate.enabled = true` + one coord per arch in `gate.gates`
 - [ ] Wall screen (optional): `generic_texture_renderer_gfx` started **above** Court, then `Config.Courtroom.projector` coords + rot
+- [ ] Job names: `Config.JobRoleMap` matches **your** framework jobs (see [Framework jobs → court roles](#framework-jobs--court-roles-configlua))
+
+### 6. Before going live
+
+- [ ] **Change every password in `Config.Archive.Passwords`.** The defaults (`citizen123`, `police123`, …) are public — anyone who read this README can open your archive stashes.
+- [ ] `Config.AdminPermissions` lists only groups you trust (they count as Supreme Court)
+- [ ] Discord webhooks in `server.cfg` convars, not in `config.lua` you share
+- [ ] Database editor ACE `nevera.court.db` given only to server owners
+- [ ] Existing database: `Install/sql/upgrade/forms_status.sql` run once
 ---
 
 ## Configuration
@@ -628,6 +659,18 @@ Config.Courtroom.projector = {
 
 YouTube, images and other links play from the eye target on the wall (**Projector — show evidence**) or from the case, one click. Notes are not shown. If the gfx resource is missing, that player gets one error. The rest of the court still works.
 
+#### Evidence on the wall screen
+
+The screen loads the link in every nearby player's game, so it only works with **public** links that open without a login:
+
+| Works | Does not work |
+|-------|---------------|
+| YouTube videos (`youtube.com`, `youtu.be`) | Private / unlisted-with-login videos |
+| Direct image links (Imgur, imgbb, Discord CDN) | Google Drive files that need a Google login |
+| Google Slides / Docs **published to the web** | Local files (`C:\…`), `localhost`, LAN IPs |
+
+The host must also be in `Config.Courtroom.allowedHosts`. Add your own image host or CCTV address there.
+
 ### Archive (how stashes work — important)
 
 Archive is **not** one shared locker for everyone. It is:
@@ -692,7 +735,7 @@ Config.Modules = {
 
 | Block | What you set |
 |-------|--------------|
-| `Config.Extras` | `/court` command + courthouse eye option |
+| `Config.Extras` | `command` = `/court` (opens the laptop) · `servicesCommand` = `/courtservices` (ox_lib *Court Services* menu, `''` = off) · `target` = courthouse eye |
 | `Config.Exams` | questions, pass score, fee, cooldown |
 | `Config.Appointments` · `Config.Appeals` · `Config.Expungement` · `Config.PleaDeals` | roles, fees, time windows |
 | `Config.Treasury` | ledger + optional society account push |
@@ -858,7 +901,32 @@ Assignable DB roles (new install): `supreme_court`, `judge`, `prosecutor`, `defe
 
 **First admin:** give yourself ACE `nevera.sudstvo.admin`, open **Admin → Role Management → Add player** and assign `supreme_court`. Or edit and run `Install/sql/first_supreme_court.sql` with your **citizenid**.
 
-Optional ACE / group mappings: `Config.Permissions`.
+### Framework jobs → court roles (`config.lua`)
+
+| Config key | Default | Purpose |
+|------------|---------|---------|
+| `Config.JobRoleMap` | `judge→judge`, `prosecutor→prosecutor`, `lawyer→defense_attorney`, … | Framework **job name** → DOJ role without a `doj_roles` row |
+| `Config.AdminPermissions` | `{ 'qbcore.god', 'admin', 'superadmin' }` | ACE / QB permission / group names that count as Supreme Court |
+| `Config.Permissions.policeMinGrade` | `2` | Min grade for police jobs (from `JobRoleMap` / police merge) when filing forms |
+| `Config.Permissions.policeProsecutorGrade` | `4` | Police grade that also acts as prosecutor (`false` = off) |
+| `Config.Permissions.policeJob` | `'police'` | Legacy single-job hint (form submit uses the full POLICE job list) |
+
+Police / DOC / JP jobs are **not** listed only in `JobRoleMap` — add them to `Config.JudicialPolice.units` (and usually `Prison.executeJobs` / `HouseArrest.policeJobs`). They are merged into the internal map at start.
+
+**Rename example — judge job is `sudac` on your server:**
+
+```lua
+Config.JobRoleMap = {
+    sudac             = 'judge',   -- your framework job name
+    district_attorney = 'prosecutor',
+    prosecutor        = 'prosecutor',
+    lawyer            = 'defense_attorney',
+    defense_attorney  = 'defense_attorney',
+    public_defender   = 'public_defender',
+}
+```
+
+Or keep the defaults and add one line: `Config.JobRoleMap.sudac = 'judge'`.
 
 **Database editor (⚠ read this):** nobody has it by default — not even Supreme Court. **You decide who gets it**, in `server.cfg` (or your permissions file):
 
@@ -913,13 +981,14 @@ Everything is also reachable by clicking in the laptop — commands are shortcut
 | `/doj_commitment` | Commitment orders (custody / DOC / judges) | **Fines** → Commitment orders |
 | `/refreshlaws` | Reload penal code from DB (console or admin) | **Law Code** → Reload from database |
 | `/courtlaws` | Penal code editor (Supreme Court / ACE admin) | **Law Code** → Edit |
-| `/court` | Court services + procedure (*My sentences* for citizens) | **Requests** · **Cases** → case tools |
+| `/court` | Open the court laptop (citizens → **Requests**, staff → **Cases**) | — |
+| `/courtservices` | ox_lib **Court Services** menu: treasury, bar exam, attorneys, appointments, my record, fines, restraining orders, house arrest, … (Full only) | Taskbar → **Help** → *Court services* |
 | `/courtboard` | Public court board (hearings + verdicts) | **Hearings** → Public board |
 | `/bracelets` | House arrest: list, live map, GPS (police / judges) | Tools → **House arrest** |
 | `/gavel` | Strike the gavel (judge) | Taskbar → **Gavel** |
 | `/jpduty` | Open Judicial Police as police + duty on / off | **Judicial Police** · taskbar 🚨 badge |
 
-Command names live in `Config.Commands` (`juryJoin`, `juryLeave`, `refreshLaws`, `help`) and `Config.JudicialPolice.dutyToggleCommand`. `legacyAliases = true` also keeps the old names (`jpdezurni`, `doj_jury_odjava`, `refreshnkz`).
+Command names live in `Config.Commands` (`juryJoin`, `juryLeave`, `refreshLaws`, `help`), `Config.Extras` (`command`, `servicesCommand`) and `Config.JudicialPolice.dutyToggleCommand`. `legacyAliases = true` also keeps the old names (`jpdezurni`, `doj_jury_odjava`, `refreshnkz`).
 
 ### Print flow
 
