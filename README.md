@@ -42,7 +42,7 @@
 
 ## Changelog
 
-### 1.0.0 — Initial release
+### 1.0.1 — Initial release
 
 **Core court**
 - Full DOJ panel: cases, 37 A4 forms × 5 languages, warrants, bail, hearings, jury, fines, penal code, archive
